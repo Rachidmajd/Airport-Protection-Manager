@@ -1,0 +1,557 @@
+[2025-08-12 18:11:38.014] [aeronautical] [info] ===== Aeronautical Platform Backend Starting =====
+[2025-08-12 18:11:38.014] [aeronautical] [info] Connecting to database at localhost:33060/aeronautical_platform
+[2025-08-12 18:11:38.018] [aeronautical] [info] Database connection established to localhost:33060/aeronautical_platform (MySQL C API)
+[2025-08-12 18:11:38.018] [aeronautical] [info] Project routes registered
+[2025-08-12 18:11:38.018] [aeronautical] [info] Project controller registered
+[2025-08-12 18:11:38.018] [aeronautical] [info] Flight procedure routes registered
+[2025-08-12 18:11:38.018] [aeronautical] [info] Flight procedure controller registered
+[2025-08-12 18:11:38.018] [aeronautical] [info] Starting server on port 8081
+[2025-08-12 18:12:01.519] [aeronautical] [error] Failed to fetch flight procedures: Failed to execute query
+[2025-08-12 18:12:01.519] [aeronautical] [error] Failed to get procedures: Failed to execute query
+[2025-08-12 18:12:01.520] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error: 
+[2025-08-12 18:12:01.520] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-12 18:12:01.520] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-12 18:18:15.036] [aeronautical] [info] ===== Aeronautical Platform Backend Starting =====
+[2025-08-12 18:18:15.036] [aeronautical] [info] Connecting to database at localhost:33060/aeronautical_platform
+[2025-08-12 18:18:15.040] [aeronautical] [info] Database connection established to localhost:33060/aeronautical_platform (MySQL C API)
+[2025-08-12 18:18:15.040] [aeronautical] [info] Project routes registered
+[2025-08-12 18:18:15.040] [aeronautical] [info] Project controller registered
+[2025-08-12 18:18:15.040] [aeronautical] [info] Flight procedure routes registered
+[2025-08-12 18:18:15.040] [aeronautical] [info] Flight procedure controller registered
+[2025-08-12 18:18:15.040] [aeronautical] [info] Starting server on port 8081
+[2025-08-12 18:18:26.597] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error: 
+[2025-08-12 18:18:26.597] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-12 18:18:26.597] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-12 18:18:26.597] [aeronautical] [warning] Protections query failed for procedure 1
+[2025-08-12 18:18:26.598] [aeronautical] [error] Select query failed: SHOW TABLES LIKE 'procedure_segments' - Error: 
+[2025-08-12 18:18:26.598] [aeronautical] [warning] Cannot check if procedure_segments table exists
+[2025-08-12 18:18:26.598] [aeronautical] [error] Select query failed: SELECT fpp.id, fpp.procedure_id, fpp.protection_name, fpp.protection_type, fpp.description, fpp.protection_geometry, fpp.altitude_min, fpp.altitude_max, fpp.altitude_reference, fpp.area_size, fpp.center_lat, fpp.center_lng, fpp.buffer_distance, fpp.restriction_level, fpp.conflict_severity, fpp.analysis_priority, fpp.time_restriction, fpp.weather_dependent, fpp.regulatory_source, fpp.operational_notes, fpp.contact_info, fpp.is_active, fpp.effective_date, fpp.expiry_date, fpp.review_date, fpp.created_at, fpp.updated_at, fpp.created_by, fpp.last_reviewed_by, fpp.last_review_date FROM flight_procedure_protection fpp WHERE fpp.procedure_id = 2 AND fpp.is_active = 1 ORDER BY fpp.analysis_priority DESC, fpp.protection_name ASC - Error: Unknown MySQL error
+[2025-08-12 18:18:26.598] [aeronautical] [warning] Protections query failed for procedure 2
+[2025-08-12 18:18:26.598] [aeronautical] [error] Select query failed: SELECT COUNT(*) FROM flight_procedures fp WHERE 1=1 AND is_active = 1 - Error: 
+[2025-08-12 18:18:26.598] [aeronautical] [error] Failed to count flight procedures: Failed to execute count query
+[2025-08-12 18:18:26.598] [aeronautical] [error] Failed to get procedures: Failed to execute count query
+[2025-08-12 18:21:12.149] [aeronautical] [info] ===== Aeronautical Platform Backend Starting =====
+[2025-08-12 18:21:12.149] [aeronautical] [info] Connecting to database at localhost:3306/aeronautical_platform
+[2025-08-12 18:21:12.151] [aeronautical] [info] Database connection established to localhost:3306/aeronautical_platform (MySQL C API)
+[2025-08-12 18:21:12.151] [aeronautical] [info] Project routes registered
+[2025-08-12 18:21:12.151] [aeronautical] [info] Project controller registered
+[2025-08-12 18:21:12.151] [aeronautical] [info] Flight procedure routes registered
+[2025-08-12 18:21:12.151] [aeronautical] [info] Flight procedure controller registered
+[2025-08-12 18:21:12.151] [aeronautical] [info] Starting server on port 8081
+[2025-08-12 18:21:29.740] [aeronautical] [warning] Flight procedures query failed, returning empty list
+[2025-08-12 18:21:29.740] [aeronautical] [error] Select query failed: SELECT COUNT(*) FROM flight_procedures fp WHERE 1=1 AND is_active = 1 - Error: 
+[2025-08-12 18:21:29.740] [aeronautical] [error] Failed to count flight procedures: Failed to execute count query
+[2025-08-12 18:21:29.740] [aeronautical] [error] Failed to get procedures: Failed to execute count query
+[2025-08-12 18:21:29.740] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error: 
+[2025-08-12 18:21:29.740] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-12 18:21:29.740] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-12 18:22:50.421] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-12 18:22:50.421] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-12 18:22:50.421] [aeronautical] [error] Select query failed: SHOW TABLES LIKE 'flight_procedures' - Error: 
+[2025-08-12 18:22:50.421] [aeronautical] [warning] Cannot check if flight_procedures table exists
+[2025-08-12 18:22:50.422] [aeronautical] [error] Failed to count flight procedures: Failed to execute count query
+[2025-08-12 18:22:50.422] [aeronautical] [error] Failed to get procedures: Failed to execute count query
+[2025-08-15 04:42:14.959] [aeronautical] [info] ===== Aeronautical Platform Backend Starting =====
+[2025-08-15 04:42:14.959] [aeronautical] [info] Connecting to database at localhost:3306/aeronautical_platform
+[2025-08-15 04:42:14.969] [aeronautical] [info] Database connection established to localhost:3306/aeronautical_platform (MySQL C API)
+[2025-08-15 04:42:14.969] [aeronautical] [info] Project routes registered
+[2025-08-15 04:42:14.969] [aeronautical] [info] Project controller registered
+[2025-08-15 04:42:14.969] [aeronautical] [info] Flight procedure routes registered
+[2025-08-15 04:42:14.969] [aeronautical] [info] Flight procedure controller registered
+[2025-08-15 04:42:14.969] [aeronautical] [info] Starting server on port 8081
+[2025-08-15 05:07:07.374] [aeronautical] [warning] procedure_segments table does not exist
+[2025-08-15 05:07:07.375] [aeronautical] [warning] flight_procedure_protection table does not exist
+[2025-08-15 05:07:07.375] [aeronautical] [warning] procedure_segments table does not exist
+[2025-08-15 05:07:07.375] [aeronautical] [warning] flight_procedure_protection table does not exist
+[2025-08-15 05:10:26.764] [aeronautical] [warning] Flight procedures query failed, returning empty list
+[2025-08-15 05:10:26.765] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error: 
+[2025-08-15 05:10:26.765] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 05:10:26.765] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 05:10:26.766] [aeronautical] [error] Select query failed: SELECT COUNT(*) FROM flight_procedures fp WHERE 1=1 AND is_active = 1 - Error: 
+[2025-08-15 05:10:26.766] [aeronautical] [error] Failed to count flight procedures: Failed to execute count query
+[2025-08-15 05:10:26.766] [aeronautical] [error] Failed to get procedures: Failed to execute count query
+[2025-08-15 05:10:29.490] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error: 
+[2025-08-15 05:10:29.490] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 05:10:29.490] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 05:10:29.490] [aeronautical] [error] Select query failed: SHOW TABLES LIKE 'flight_procedures' - Error: 
+[2025-08-15 05:10:29.490] [aeronautical] [warning] Cannot check if flight_procedures table exists
+[2025-08-15 05:10:29.490] [aeronautical] [error] Select query failed: SELECT COUNT(*) FROM flight_procedures fp WHERE 1=1 AND is_active = 1 - Error: Unknown MySQL error
+[2025-08-15 05:10:29.490] [aeronautical] [error] Failed to count flight procedures: Failed to execute count query
+[2025-08-15 05:11:55.555] [aeronautical] [info] ===== Aeronautical Platform Backend Starting =====
+[2025-08-15 05:11:55.555] [aeronautical] [info] Connecting to database at localhost:3306/aeronautical_platform
+[2025-08-15 05:11:55.561] [aeronautical] [info] Database connection established to localhost:3306/aeronautical_platform (MySQL C API)
+[2025-08-15 05:11:55.561] [aeronautical] [info] Project routes registered
+[2025-08-15 05:11:55.561] [aeronautical] [info] Project controller registered
+[2025-08-15 05:11:55.561] [aeronautical] [info] Flight procedure routes registered
+[2025-08-15 05:11:55.561] [aeronautical] [info] Flight procedure controller registered
+[2025-08-15 05:11:55.561] [aeronautical] [info] Starting server on port 8081
+[2025-08-15 05:12:05.052] [aeronautical] [info] ===== Aeronautical Platform Backend Starting =====
+[2025-08-15 05:12:05.052] [aeronautical] [info] Connecting to database at localhost:3306/aeronautical_platform
+[2025-08-15 05:12:05.055] [aeronautical] [info] Database connection established to localhost:3306/aeronautical_platform (MySQL C API)
+[2025-08-15 05:12:05.055] [aeronautical] [info] Project routes registered
+[2025-08-15 05:12:05.055] [aeronautical] [info] Project controller registered
+[2025-08-15 05:12:05.055] [aeronautical] [info] Flight procedure routes registered
+[2025-08-15 05:12:05.055] [aeronautical] [info] Flight procedure controller registered
+[2025-08-15 05:12:05.055] [aeronautical] [info] Starting server on port 8081
+[2025-08-15 05:12:11.403] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 05:12:11.403] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 05:12:11.406] [aeronautical] [error] Select query failed: SHOW TABLES LIKE 'procedure_segments' - Error: 
+[2025-08-15 05:12:11.406] [aeronautical] [warning] Cannot check if procedure_segments table exists
+[2025-08-15 05:12:11.407] [aeronautical] [warning] Protections query failed for procedure 1
+[2025-08-15 05:12:11.408] [aeronautical] [error] Select query failed: SHOW TABLES LIKE 'procedure_segments' - Error: 
+[2025-08-15 05:12:11.408] [aeronautical] [warning] Cannot check if procedure_segments table exists
+[2025-08-15 05:12:11.408] [aeronautical] [warning] Cannot check if flight_procedure_protection table exists
+[2025-08-15 05:12:11.408] [aeronautical] [warning] Database connection lost, attempting to reconnect...
+[2025-08-15 05:12:11.410] [aeronautical] [info] Database connection established to localhost:3306/aeronautical_platform (MySQL C API)
+[2025-08-15 05:45:35.922] [aeronautical] [info] ===== Aeronautical Platform Backend Starting =====
+[2025-08-15 05:45:35.922] [aeronautical] [info] Connecting to database at localhost:3306/aeronautical_platform
+[2025-08-15 05:45:35.932] [aeronautical] [info] Database connection established to localhost:3306/aeronautical_platform (MySQL C API)
+[2025-08-15 05:45:35.932] [aeronautical] [info] Project routes registered
+[2025-08-15 05:45:35.932] [aeronautical] [info] Project controller registered
+[2025-08-15 05:45:35.932] [aeronautical] [info] Flight procedure routes registered
+[2025-08-15 05:45:35.932] [aeronautical] [info] Flight procedure controller registered
+[2025-08-15 05:45:35.932] [aeronautical] [info] Starting server on port 8081
+[2025-08-15 05:47:26.125] [aeronautical] [warning] Flight procedures query failed, returning empty list
+[2025-08-15 05:47:26.126] [aeronautical] [error] Select query failed: SELECT COUNT(*) FROM flight_procedures WHERE 1=1 AND is_active = 1 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 05:47:26.126] [aeronautical] [warning] Count query failed, returning 0
+[2025-08-15 05:47:26.127] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 2000, SQLSTATE: HY000, Message: 'Unknown MySQL error'
+[2025-08-15 05:47:26.127] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 05:47:26.127] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 05:48:36.101] [aeronautical] [info] ===== Aeronautical Platform Backend Starting =====
+[2025-08-15 05:48:36.101] [aeronautical] [info] Connecting to database at localhost:3306/aeronautical_platform
+[2025-08-15 05:48:36.105] [aeronautical] [info] Database connection established to localhost:3306/aeronautical_platform (MySQL C API)
+[2025-08-15 05:48:36.105] [aeronautical] [info] Project routes registered
+[2025-08-15 05:48:36.106] [aeronautical] [info] Project controller registered
+[2025-08-15 05:48:36.106] [aeronautical] [info] Flight procedure routes registered
+[2025-08-15 05:48:36.106] [aeronautical] [info] Flight procedure controller registered
+[2025-08-15 05:48:36.106] [aeronautical] [info] Starting server on port 8081
+[2025-08-15 05:48:41.483] [aeronautical] [error] Failed to count projects: Failed to execute count query
+[2025-08-15 05:48:41.483] [aeronautical] [error] Failed to get projects: Failed to execute count query
+[2025-08-15 05:48:41.484] [aeronautical] [error] Select query failed: SELECT COUNT(*) FROM flight_procedures WHERE 1=1 AND is_active = 1 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 05:48:41.484] [aeronautical] [warning] Count query failed, returning 0
+[2025-08-15 05:57:50.461] [aeronautical] [info] ===== Aeronautical Platform Backend Starting =====
+[2025-08-15 05:57:50.461] [aeronautical] [info] Connecting to database at localhost:3306/aeronautical_platform
+[2025-08-15 05:57:50.467] [aeronautical] [info] Database connection established to localhost:3306/aeronautical_platform (MySQL C API)
+[2025-08-15 05:57:50.467] [aeronautical] [info] Project routes registered
+[2025-08-15 05:57:50.467] [aeronautical] [info] Project controller registered
+[2025-08-15 05:57:50.467] [aeronautical] [info] Flight procedure routes registered
+[2025-08-15 05:57:50.467] [aeronautical] [info] Flight procedure controller registered
+[2025-08-15 05:57:50.467] [aeronautical] [info] Starting server on port 8081
+[2025-08-15 05:57:55.721] [aeronautical] [warning] Flight procedures query failed, returning empty list
+[2025-08-15 05:57:55.722] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 05:57:55.723] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 05:57:55.723] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 05:59:52.565] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 2000, SQLSTATE: HY000, Message: 'Unknown MySQL error'
+[2025-08-15 05:59:52.565] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 05:59:52.565] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:00:15.993] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:00:15.993] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:00:41.612] [aeronautical] [info] ===== Aeronautical Platform Backend Starting =====
+[2025-08-15 06:00:41.612] [aeronautical] [info] Connecting to database at localhost:3306/aeronautical_platform
+[2025-08-15 06:00:41.616] [aeronautical] [info] Database connection established to localhost:3306/aeronautical_platform (MySQL C API)
+[2025-08-15 06:00:41.616] [aeronautical] [info] Project routes registered
+[2025-08-15 06:00:41.616] [aeronautical] [info] Project controller registered
+[2025-08-15 06:00:41.616] [aeronautical] [info] Flight procedure routes registered
+[2025-08-15 06:00:41.616] [aeronautical] [info] Flight procedure controller registered
+[2025-08-15 06:00:41.616] [aeronautical] [info] Starting server on port 8081
+[2025-08-15 06:01:47.118] [aeronautical] [warning] Flight procedures query failed, returning empty list
+[2025-08-15 06:01:47.119] [aeronautical] [error] Select query failed: SELECT COUNT(*) FROM flight_procedures fp WHERE 1=1 AND fp.is_active = 1 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:01:47.119] [aeronautical] [warning] Count query failed, returning 0
+[2025-08-15 06:01:47.119] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:01:47.119] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:01:47.119] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:01:50.121] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:01:50.121] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:01:50.881] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:01:50.881] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:01:50.881] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:01:51.515] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:01:51.515] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:01:51.515] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:01:51.948] [aeronautical] [error] Project count query failed
+[2025-08-15 06:01:52.262] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:01:52.262] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:01:52.262] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:01:52.540] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:01:52.540] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:01:52.540] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:01:52.772] [aeronautical] [error] Project count query failed
+[2025-08-15 06:01:53.050] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:01:53.050] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:01:53.050] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:01:53.368] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:01:53.368] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:01:53.368] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:01:53.727] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:01:53.727] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:01:53.728] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:01:53.991] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:01:53.991] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:01:54.218] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:01:54.218] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:01:54.218] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:01:54.444] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:01:54.444] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:01:54.444] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:01:54.663] [aeronautical] [error] Project count query failed
+[2025-08-15 06:01:54.891] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:01:54.891] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:01:54.891] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:01:55.129] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:01:55.129] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:01:55.129] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:01:55.341] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:01:55.341] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:01:55.341] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:01:55.540] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:01:55.540] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:01:55.770] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:01:55.770] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:01:55.771] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:01:56.008] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:01:56.008] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:01:56.008] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:01:56.216] [aeronautical] [error] Project count query failed
+[2025-08-15 06:01:59.914] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:01:59.914] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:01:59.914] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:01:59.914] [aeronautical] [error] Failed to store result for query: SELECT fp.id, fp.procedure_code, fp.name, fp.type, fp.airport_icao, fp.runway, fp.description, fp.effective_date, fp.expiry_date, fp.is_active FROM flight_procedures fp WHERE 1=1 AND fp.is_active = 1 ORDER BY fp.procedure_code ASC LIMIT 100 OFFSET 0 - Error: 'Unknown MySQL error'
+[2025-08-15 06:01:59.914] [aeronautical] [warning] Flight procedures query failed, returning empty list
+[2025-08-15 06:01:59.914] [aeronautical] [error] Select query failed: SELECT COUNT(*) FROM flight_procedures fp WHERE 1=1 AND fp.is_active = 1 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:01:59.914] [aeronautical] [warning] Count query failed, returning 0
+[2025-08-15 06:02:05.044] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 5 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:02:05.044] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:02:05.044] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:02:05.494] [aeronautical] [error] Project count query failed
+[2025-08-15 06:02:06.056] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:02:06.056] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:02:06.056] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:02:06.509] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:02:06.509] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:02:06.509] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:02:07.173] [aeronautical] [error] Project count query failed
+[2025-08-15 06:02:07.524] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:02:07.524] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:02:07.524] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:02:07.875] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:02:07.875] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:02:07.875] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:02:08.139] [aeronautical] [error] Project count query failed
+[2025-08-15 06:02:08.433] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:02:08.433] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:02:08.433] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:02:08.736] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:02:08.736] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:02:08.736] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:02:09.008] [aeronautical] [error] Project count query failed
+[2025-08-15 06:02:09.303] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:02:09.303] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:02:09.303] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:02:09.589] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:02:09.590] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:02:09.590] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:02:10.511] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:02:10.511] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:02:10.512] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:02:10.843] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:02:10.843] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:02:11.375] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:02:11.375] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:02:11.375] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:02:11.915] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:02:11.915] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:02:11.915] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:02:12.686] [aeronautical] [error] Project count query failed
+[2025-08-15 06:02:13.057] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:02:13.057] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:02:13.057] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:02:13.420] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:02:13.420] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:02:13.420] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:02:14.890] [aeronautical] [error] Project count query failed
+[2025-08-15 06:02:15.438] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:02:15.438] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:02:15.438] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:02:15.907] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:02:15.907] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:02:15.907] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:02:17.444] [aeronautical] [error] Project count query failed
+[2025-08-15 06:02:18.055] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:02:18.055] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:02:18.055] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:02:18.594] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:02:18.594] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:02:18.594] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:02:19.825] [aeronautical] [error] Project count query failed
+[2025-08-15 06:02:20.343] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:02:20.343] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:02:20.343] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:02:20.923] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:02:20.923] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:02:20.923] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:02:22.472] [aeronautical] [error] Project count query failed
+[2025-08-15 06:02:22.925] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:02:22.925] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:02:22.925] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:02:23.364] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:02:23.364] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:02:23.364] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:02:23.791] [aeronautical] [error] Project count query failed
+[2025-08-15 06:02:24.184] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:02:24.185] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:02:24.185] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:02:24.559] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:02:24.559] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:02:24.559] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:04:14.023] [aeronautical] [error] Project count query failed
+[2025-08-15 06:04:15.829] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 0, SQLSTATE: 00000, Message: ''
+[2025-08-15 06:04:15.829] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-15 06:04:15.829] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-15 06:15:51.184] [aeronautical] [info] ===== Aeronautical Platform Backend Starting =====
+[2025-08-15 06:15:51.184] [aeronautical] [info] Connecting to database at localhost:3306/aeronautical_platform
+[2025-08-15 06:15:51.189] [aeronautical] [info] Database connection established to localhost:3306/aeronautical_platform (MySQL C API)
+[2025-08-15 06:15:51.189] [aeronautical] [info] Project routes registered
+[2025-08-15 06:15:51.189] [aeronautical] [info] Project controller registered
+[2025-08-15 06:15:51.189] [aeronautical] [info] Flight procedure routes registered
+[2025-08-15 06:15:51.189] [aeronautical] [info] Flight procedure controller registered
+[2025-08-15 06:15:51.189] [aeronautical] [info] Starting server on port 8081
+[2025-08-15 06:18:38.081] [aeronautical] [info] ===== Aeronautical Platform Backend Starting =====
+[2025-08-15 06:18:38.081] [aeronautical] [info] Connecting to database at localhost:3306/aeronautical_platform
+[2025-08-15 06:18:38.084] [aeronautical] [info] Database connection established to localhost:3306/aeronautical_platform (MySQL C API)
+[2025-08-15 06:18:38.084] [aeronautical] [info] Project routes registered
+[2025-08-15 06:18:38.084] [aeronautical] [info] Project controller registered
+[2025-08-15 06:18:38.084] [aeronautical] [info] Flight procedure routes registered
+[2025-08-15 06:18:38.085] [aeronautical] [info] Flight procedure controller registered
+[2025-08-15 06:18:38.085] [aeronautical] [info] Starting server on port 8081
+[2025-08-15 06:22:45.722] [aeronautical] [info] ===== Aeronautical Platform Backend Starting =====
+[2025-08-15 06:22:45.722] [aeronautical] [info] Connecting to database at localhost:3306/aeronautical_platform
+[2025-08-15 06:22:45.727] [aeronautical] [info] Database connection established to localhost:3306/aeronautical_platform (MySQL C API)
+[2025-08-15 06:22:45.727] [aeronautical] [info] Project routes registered
+[2025-08-15 06:22:45.727] [aeronautical] [info] Project controller registered
+[2025-08-15 06:22:45.727] [aeronautical] [info] Flight procedure routes registered
+[2025-08-15 06:22:45.727] [aeronautical] [info] Flight procedure controller registered
+[2025-08-15 06:22:45.727] [aeronautical] [info] Starting server on port 8081
+[2025-08-18 07:31:20.925] [aeronautical] [info] ===== Aeronautical Platform Backend Starting =====
+[2025-08-18 07:31:20.925] [aeronautical] [info] Connecting to database at localhost:3306/aeronautical_platform
+[2025-08-18 07:31:20.939] [aeronautical] [info] Database connection established to localhost:3306/aeronautical_platform (MySQL C API)
+[2025-08-18 07:31:20.940] [aeronautical] [info] Project routes registered
+[2025-08-18 07:31:20.940] [aeronautical] [info] Project controller registered
+[2025-08-18 07:31:20.940] [aeronautical] [info] Flight procedure routes registered
+[2025-08-18 07:31:20.940] [aeronautical] [info] Flight procedure controller registered
+[2025-08-18 07:31:20.940] [aeronautical] [info] Starting server on port 8081
+[2025-08-18 08:11:22.950] [aeronautical] [info] ===== Aeronautical Platform Backend Starting =====
+[2025-08-18 08:11:22.953] [aeronautical] [info] Connecting to database at localhost:3306/aeronautical_platform
+[2025-08-18 08:11:22.974] [aeronautical] [info] Database connection established to localhost:3306/aeronautical_platform (MySQL C API)
+[2025-08-18 08:11:22.975] [aeronautical] [info] Project routes registered
+[2025-08-18 08:11:22.975] [aeronautical] [info] Project controller registered
+[2025-08-18 08:11:22.975] [aeronautical] [info] Flight procedure routes registered
+[2025-08-18 08:11:22.975] [aeronautical] [info] Flight procedure controller registered
+[2025-08-18 08:11:22.975] [aeronautical] [info] Starting server on port 8081
+[2025-08-18 08:47:27.746] [aeronautical] [info] ===== Aeronautical Platform Backend Starting =====
+[2025-08-18 08:47:27.746] [aeronautical] [info] Connecting to database at localhost:3306/aeronautical_platform
+[2025-08-18 08:47:27.758] [aeronautical] [info] Database connection established to localhost:3306/aeronautical_platform (MySQL C API)
+[2025-08-18 08:47:27.758] [aeronautical] [info] Project routes registered
+[2025-08-18 08:47:27.758] [aeronautical] [info] Project controller registered
+[2025-08-18 08:47:27.758] [aeronautical] [info] Flight procedure routes registered
+[2025-08-18 08:47:27.758] [aeronautical] [info] Flight procedure controller registered
+[2025-08-18 08:47:27.758] [aeronautical] [info] Starting server on port 8081
+[2025-08-18 08:53:36.956] [aeronautical] [info] ===== Aeronautical Platform Backend Starting =====
+[2025-08-18 08:53:36.957] [aeronautical] [info] Connecting to database at localhost:3306/aeronautical_platform
+[2025-08-18 08:53:36.963] [aeronautical] [info] Database connection established to localhost:3306/aeronautical_platform (MySQL C API)
+[2025-08-18 08:53:36.963] [aeronautical] [info] Project routes registered
+[2025-08-18 08:53:36.963] [aeronautical] [info] Project controller registered
+[2025-08-18 08:53:36.963] [aeronautical] [info] Flight procedure routes registered
+[2025-08-18 08:53:36.963] [aeronautical] [info] Flight procedure controller registered
+[2025-08-18 08:53:36.963] [aeronautical] [info] Starting server on port 8081
+[2025-08-18 08:54:09.112] [aeronautical] [info] Updated project with ID 10
+[2025-08-18 08:54:09.158] [aeronautical] [info] Submitted project: PROJ-2025-001 - Downtown Construction Survey 1 with geometry
+[2025-08-18 09:16:19.421] [aeronautical] [info] Updated project with ID 13
+[2025-08-18 09:16:19.497] [aeronautical] [info] Submitted project: PROJ-2025-004 - Environmental Monitoring with geometry
+[2025-08-18 09:20:33.158] [aeronautical] [info] Updated project with ID 12
+[2025-08-18 09:20:33.185] [aeronautical] [info] Submitted project: PROJ-2025-003 - Infrastructure Inspection with geometry
+[2025-08-18 12:46:31.108] [aeronautical] [info] ===== Aeronautical Platform Backend Starting =====
+[2025-08-18 12:46:31.108] [aeronautical] [info] Connecting to database at localhost:3306/aeronautical_platform
+[2025-08-18 12:46:31.120] [aeronautical] [info] Database connection established to localhost:3306/aeronautical_platform (MySQL C API)
+[2025-08-18 12:46:31.120] [aeronautical] [info] Project routes registered
+[2025-08-18 12:46:31.120] [aeronautical] [info] Project controller registered
+[2025-08-18 12:46:31.120] [aeronautical] [info] Flight procedure routes registered
+[2025-08-18 12:46:31.120] [aeronautical] [info] Flight procedure controller registered
+[2025-08-18 12:46:31.120] [aeronautical] [info] Starting server on port 8081
+[2025-08-18 13:02:44.248] [aeronautical] [info] ===== Aeronautical Platform Backend Starting =====
+[2025-08-18 13:02:44.248] [aeronautical] [info] Connecting to database at localhost:3306/aeronautical_platform
+[2025-08-18 13:02:44.254] [aeronautical] [info] Database connection established to localhost:3306/aeronautical_platform (MySQL C API)
+[2025-08-18 13:02:44.254] [aeronautical] [info] Project routes registered
+[2025-08-18 13:02:44.254] [aeronautical] [info] Project controller registered
+[2025-08-18 13:02:44.254] [aeronautical] [info] Flight procedure routes registered
+[2025-08-18 13:02:44.254] [aeronautical] [info] Flight procedure controller registered
+[2025-08-18 13:02:44.254] [aeronautical] [info] Starting server on port 8081
+[2025-08-18 13:03:05.403] [aeronautical] [info] Received geometry payload for project ID 10:
+{
+  "geometries": [
+    {
+      "geometry": {
+        "coordinates": [
+          [
+            [
+              -8.013753890991213,
+              31.644028945047847
+            ],
+            [
+              -8.011608123779299,
+              31.64651328258057
+            ],
+            [
+              -8.00834655761719,
+              31.644175084387456
+            ],
+            [
+              -8.009719848632814,
+              31.641471469420566
+            ],
+            [
+              -8.013753890991213,
+              31.644028945047847
+            ]
+          ]
+        ],
+        "type": "Polygon"
+      },
+      "properties": {
+        "shapeType": "polygon"
+      },
+      "type": "Feature"
+    }
+  ]
+}
+[2025-08-18 13:03:05.433] [aeronautical] [info] Updated project with ID 10
+[2025-08-18 13:03:05.466] [aeronautical] [info] Submitted project: PROJ-2025-001 - Downtown Construction Survey 1 with geometry
+[2025-08-18 14:05:40.813] [aeronautical] [error] Query failed: INSERT INTO project_geometries (project_id, name, geometry_data, is_primary, geometry_type) VALUES (13, 'Aggregated Project Geometry', '{"features":[{"geometry":{"coordinates":[[[-8.041820526123047,31.635260164322723],[-8.045082092285158,31.639827340799048],[-8.040318489074709,31.642823286731083],[-8.032121658325197,31.638146645939273],[-8.041820526123047,31.635260164322723]]],"type":"Polygon"},"properties":{"shapeType":"polygon"},"type":"Feature"}],"type":"FeatureCollection"}', 1, 'collection') ON DUPLICATE KEY UPDATE geometry_data = VALUES(geometry_data), updated_at = NOW() - Error Code: 1265, SQLSTATE: 01000, Message: 'Data truncated for column 'geometry_type' at row 1'
+[2025-08-18 14:05:40.813] [aeronautical] [error] Failed to upsert geometry collection for project 13
+[2025-08-18 14:06:55.022] [aeronautical] [error] Query failed: INSERT INTO project_geometries (project_id, name, geometry_data, is_primary, geometry_type) VALUES (13, 'Aggregated Project Geometry', '{"features":[{"geometry":{"coordinates":[[[-8.044245243072512,31.634565933860753],[-8.041391372680666,31.644028945047847],[-8.032486438751222,31.64158107696172],[-8.032915592193605,31.639297559828243],[-8.03529739379883,31.639224486354014],[-8.03506135940552,31.636338038192115],[-8.033194541931154,31.633488039453603],[-8.036413192749025,31.633999584119508],[-8.03905248641968,31.63423708604375],[-8.041219711303713,31.63436497144409],[-8.044245243072512,31.634565933860753]]],"type":"Polygon"},"properties":{"shapeType":"polygon"},"type":"Feature"}],"type":"FeatureCollection"}', 1, 'collection') ON DUPLICATE KEY UPDATE geometry_data = VALUES(geometry_data), updated_at = NOW() - Error Code: 1265, SQLSTATE: 01000, Message: 'Data truncated for column 'geometry_type' at row 1'
+[2025-08-18 14:06:55.022] [aeronautical] [error] Failed to upsert geometry collection for project 13
+[2025-08-18 14:09:15.095] [aeronautical] [info] Successfully saved/updated geometry collection for project 12
+[2025-08-18 14:09:15.095] [aeronautical] [info] Received geometry payload for project ID 12:
+{
+  "geometry": {
+    "features": [
+      {
+        "geometry": {
+          "coordinates": [
+            [
+              [
+                -8.017015457153322,
+                31.634967857391377
+              ],
+              [
+                -8.020277023315431,
+                31.649582078462597
+              ],
+              [
+                -8.01881790161133,
+                31.653600586533315
+              ],
+              [
+                -8.00482749938965,
+                31.639352364896233
+              ],
+              [
+                -8.011007308959963,
+                31.637890885362882
+              ],
+              [
+                -8.017015457153322,
+                31.634967857391377
+              ]
+            ]
+          ],
+          "type": "Polygon"
+        },
+        "properties": {
+          "shapeType": "polygon"
+        },
+        "type": "Feature"
+      }
+    ],
+    "type": "FeatureCollection"
+  }
+}
+[2025-08-18 14:09:15.121] [aeronautical] [info] Updated project with ID 12
+[2025-08-18 14:09:15.233] [aeronautical] [info] Submitted project: PROJ-2025-003 - Infrastructure Inspection with geometry
+[2025-08-18 14:20:17.153] [aeronautical] [info] ===== Aeronautical Platform Backend Starting =====
+[2025-08-18 14:20:17.153] [aeronautical] [info] Connecting to database at localhost:3306/aeronautical_platform
+[2025-08-18 14:20:17.160] [aeronautical] [info] Database connection established to localhost:3306/aeronautical_platform (MySQL C API)
+[2025-08-18 14:20:17.160] [aeronautical] [info] Project routes registered
+[2025-08-18 14:20:17.160] [aeronautical] [info] Project controller registered
+[2025-08-18 14:20:17.160] [aeronautical] [info] Flight procedure routes registered
+[2025-08-18 14:20:17.160] [aeronautical] [info] Flight procedure controller registered
+[2025-08-18 14:20:17.160] [aeronautical] [info] Starting server on port 8081
+[2025-08-18 14:30:00.659] [aeronautical] [info] Successfully saved/updated geometry collection for project 12
+[2025-08-18 14:30:00.660] [aeronautical] [info] Received geometry payload for project ID 12:
+{
+  "geometry": {
+    "features": [
+      {
+        "geometry": {
+          "coordinates": [
+            [
+              [
+                -8.017015457153322,
+                31.634967857391377
+              ],
+              [
+                -8.020277023315431,
+                31.649582078462597
+              ],
+              [
+                -8.01881790161133,
+                31.653600586533315
+              ],
+              [
+                -8.00482749938965,
+                31.639352364896233
+              ],
+              [
+                -8.011007308959963,
+                31.637890885362882
+              ],
+              [
+                -8.017015457153322,
+                31.634967857391377
+              ]
+            ]
+          ],
+          "type": "Polygon"
+        },
+        "properties": {
+          "shapeType": "polygon"
+        },
+        "type": "Feature"
+      }
+    ],
+    "type": "FeatureCollection"
+  }
+}
+[2025-08-18 14:30:00.729] [aeronautical] [info] Updated project with ID 12
+[2025-08-18 14:30:00.756] [aeronautical] [info] Submitted project: PROJ-2025-003 - Infrastructure Inspection with geometry
+[2025-08-18 14:59:38.843] [aeronautical] [info] ===== Aeronautical Platform Backend Starting =====
+[2025-08-18 14:59:38.843] [aeronautical] [info] Connecting to database at localhost:3306/aeronautical_platform
+[2025-08-18 14:59:38.853] [aeronautical] [info] Database connection established to localhost:3306/aeronautical_platform (MySQL C API)
+[2025-08-18 14:59:38.853] [aeronautical] [info] Project routes registered
+[2025-08-18 14:59:38.853] [aeronautical] [info] Project controller registered
+[2025-08-18 14:59:38.853] [aeronautical] [info] Flight procedure routes registered
+[2025-08-18 14:59:38.853] [aeronautical] [info] Flight procedure controller registered
+[2025-08-18 14:59:38.853] [aeronautical] [info] Starting server on port 8081
+[2025-08-18 14:59:50.383] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE 1=1 ORDER BY p.created_at DESC LIMIT 100 OFFSET 0 - Error Code: 1054, SQLSTATE: 42S22, Message: 'Unknown column 'resolution_status' in 'where clause''
+[2025-08-18 14:59:50.384] [aeronautical] [error] Failed to fetch projects: Failed to execute query
+[2025-08-18 14:59:50.384] [aeronautical] [error] Failed to get projects: Failed to execute query
+[2025-08-18 15:00:11.189] [aeronautical] [error] Select query failed: SELECT p.id, p.project_code, p.title, p.description, p.demander_id, p.demander_name, p.demander_organization, p.demander_email, p.demander_phone, p.status, p.priority, p.operation_type, p.altitude_min, p.altitude_max, p.start_date, p.end_date, p.assigned_reviewer_id, p.review_deadline, p.approval_date, p.rejection_reason, p.comment, p.internal_notes, p.created_at, p.updated_at, (SELECT COUNT(*) FROM project_documents WHERE project_id = p.id) as doc_count, (SELECT COUNT(*) FROM project_geometries WHERE project_id = p.id) as geo_count, (SELECT COUNT(*) FROM conflicts WHERE project_id = p.id AND resolution_status = 'unresolved') as conflict_count FROM projects p WHERE p.id = 1 - Error Code: 1054, SQLSTATE: 42S22, Message: 'Unknown column 'resolution_status' in 'where clause''
+[2025-08-18 15:00:11.189] [aeronautical] [error] Failed to find project by id 1: Failed to execute query
+[2025-08-18 15:00:11.189] [aeronautical] [error] Failed to submit project 1: Failed to execute query
+[2025-08-18 15:10:05.126] [aeronautical] [info] ===== Aeronautical Platform Backend Starting =====
+[2025-08-18 15:10:05.126] [aeronautical] [info] Connecting to database at localhost:3306/aeronautical_platform
+[2025-08-18 15:10:05.130] [aeronautical] [info] Database connection established to localhost:3306/aeronautical_platform (MySQL C API)
+[2025-08-18 15:10:05.130] [aeronautical] [info] Project routes registered
+[2025-08-18 15:10:05.130] [aeronautical] [info] Project controller registered
+[2025-08-18 15:10:05.130] [aeronautical] [info] Flight procedure routes registered
+[2025-08-18 15:10:05.130] [aeronautical] [info] Flight procedure controller registered
+[2025-08-18 15:10:05.130] [aeronautical] [info] Starting server on port 8081
