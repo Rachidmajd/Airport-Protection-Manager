@@ -313,4 +313,4 @@ CMakeFiles/aeronautical_backend.dir/src/ConflictController.cpp.o: \
  /usr/include/gdal/ogr_api.h /usr/include/gdal/ogr_geometry.h \
  /usr/include/gdal/cpl_conv.h /usr/include/gdal/cpl_json.h \
  /usr/include/gdal/ogr_spatialref.h /usr/include/gdal/cpl_string.h \
- /usr/include/gdal/ogr_srs_api.h
+ /usr/include/gdal/ogr_srs_api.h /usr/include/gdal/ogr_spatialref.h

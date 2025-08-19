@@ -577,20 +577,66 @@ std::vector<ProcedureProtection> FlightProcedureRepository::findAllActiveProtect
     std::vector<ProcedureProtection> protections;
     try {
         auto& db = DatabaseManager::getInstance();
-        std::string query = buildProtectionSelectQuery() + " WHERE fpp.is_active = 1";
+        
+        // Query the flight_procedures table directly since protection_geometry is stored there
+        std::string query = "SELECT id, procedure_code, name, type, airport_icao, "
+                           "runway, description, protection_geometry, "
+                           "effective_date, expiry_date, is_active "
+                           "FROM flight_procedures fp "
+                           "WHERE fp.is_active = 1 AND fp.protection_geometry IS NOT NULL "
+                           "AND fp.protection_geometry != ''";
+        
+        logger_->debug("Executing active protections query: {}", query);
         
         MYSQL_RES* result = db.executeSelectQuery(query);
         if (result) {
             MYSQL_ROW row;
             while ((row = mysql_fetch_row(result))) {
-                unsigned long* lengths = mysql_fetch_lengths(result);
-                protections.push_back(rowToProtection(row, lengths));
+                // Convert flight_procedures row to ProcedureProtection
+                ProcedureProtection protection;
+                
+                int col = 0;
+                protection.procedure_id = row[col] ? std::atoi(row[col]) : 0; col++; // id -> procedure_id
+                std::string procedure_code = row[col] ? std::string(row[col]) : ""; col++; // procedure_code
+                std::string procedure_name = row[col] ? std::string(row[col]) : ""; col++; // name
+                std::string procedure_type = row[col] ? std::string(row[col]) : ""; col++; // type
+                std::string airport_icao = row[col] ? std::string(row[col]) : ""; col++; // airport_icao
+                std::string runway = row[col] ? std::string(row[col]) : ""; col++; // runway (optional)
+                std::string description = row[col] ? std::string(row[col]) : ""; col++; // description (optional)
+                
+                // The protection_geometry field - this is what we need!
+                protection.protection_geometry = row[col] ? std::string(row[col]) : "{}"; col++;
+                
+                // Set default values for protection-specific fields
+                protection.id = protection.procedure_id; // Use same ID
+                protection.protection_name = procedure_code + " - " + procedure_name + " Protection Zone";
+                protection.protection_type = ProtectionType::OverallPrimary; // Default type
+                protection.description = description.empty() ? 
+                    ("Protection zone for " + procedure_type + " procedure at " + airport_icao) : 
+                    description;
+                
+                // Default values for other fields
+                protection.altitude_reference = AltitudeReference::MSL;
+                protection.restriction_level = RestrictionLevel::Restricted;
+                protection.conflict_severity = ConflictSeverity::High; // Flight procedures are high priority
+                protection.analysis_priority = 80; // High priority for flight procedures
+                protection.weather_dependent = false;
+                protection.is_active = true;
+                protection.created_at = std::chrono::system_clock::now();
+                protection.updated_at = std::chrono::system_clock::now();
+                
+                // Skip the remaining columns (effective_date, expiry_date, is_active) for now
+                
+                protections.push_back(protection);
             }
             mysql_free_result(result);
+        } else {
+            logger_->warn("Failed to execute active protections query");
         }
     } catch (const std::exception& err) {
         logger_->error("Failed to find all active protections: {}", err.what());
     }
+    
     logger_->info("Found {} active flight procedure protections for analysis.", protections.size());
     return protections;
 }
