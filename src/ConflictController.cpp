@@ -27,25 +27,76 @@ ConflictController& ConflictController::getInstance() {
     return *instance_;
 }
 
-// Helper function to create geometry from GeoJSON compatible with GDAL 3.0.4
+// Helper function to create geometry from GeoJSON - FIXED to handle FeatureCollections
 OGRGeometryH createGeometryFromGeoJSON(const std::string& geojson) {
-    // For GDAL 3.0.4, use the C++ API which is more reliable
-    OGRGeometry* geometry = nullptr;
-    
-    // Method 1: Use OGRGeometryFactory::createFromGeoJson (GDAL 3.0+)
-    geometry = OGRGeometryFactory::createFromGeoJson(geojson.c_str());
-    if (geometry != nullptr) {
-        return (OGRGeometryH)geometry;
+    try {
+        // Parse the JSON to check if it's a FeatureCollection
+        nlohmann::json j = nlohmann::json::parse(geojson);
+        
+        if (j.contains("type") && j["type"] == "FeatureCollection") {
+            // It's a FeatureCollection - we need to extract and merge geometries
+            if (!j.contains("features") || !j["features"].is_array() || j["features"].empty()) {
+                spdlog::error("FeatureCollection has no features");
+                return nullptr;
+            }
+            
+            OGRGeometryCollection* collection = new OGRGeometryCollection();
+            
+            for (const auto& feature : j["features"]) {
+                if (!feature.contains("geometry")) continue;
+                
+                std::string geom_str = feature["geometry"].dump();
+                OGRGeometry* geom = OGRGeometryFactory::createFromGeoJson(geom_str.c_str());
+                
+                if (geom) {
+                    collection->addGeometry(geom);
+                    delete geom; // Collection takes ownership, but we need to clean up our pointer
+                }
+            }
+            
+            // If we only have one geometry, return it directly
+            // Otherwise, return a union of all geometries
+            if (collection->getNumGeometries() == 1) {
+                OGRGeometry* single = collection->getGeometryRef(0)->clone();
+                delete collection;
+                return (OGRGeometryH)single;
+            } else if (collection->getNumGeometries() > 1) {
+                // Create a union of all geometries
+                OGRGeometry* unionGeom = collection->UnionCascaded();
+                delete collection;
+                return (OGRGeometryH)unionGeom;
+            } else {
+                delete collection;
+                return nullptr;
+            }
+        } else if (j.contains("type") && j["type"] == "Feature") {
+            // It's a single Feature - extract the geometry
+            if (!j.contains("geometry")) {
+                spdlog::error("Feature has no geometry");
+                return nullptr;
+            }
+            
+            std::string geom_str = j["geometry"].dump();
+            OGRGeometry* geometry = OGRGeometryFactory::createFromGeoJson(geom_str.c_str());
+            return (OGRGeometryH)geometry;
+        } else {
+            // Try to parse it as a direct geometry
+            OGRGeometry* geometry = OGRGeometryFactory::createFromGeoJson(geojson.c_str());
+            if (geometry) {
+                return (OGRGeometryH)geometry;
+            }
+            
+            // Fallback to C API
+            OGRGeometryH hGeom = OGR_G_CreateGeometryFromJson(geojson.c_str());
+            if (hGeom) {
+                return hGeom;
+            }
+        }
+    } catch (const std::exception& e) {
+        spdlog::error("Exception while parsing GeoJSON: {}", e.what());
     }
     
-    // Method 2: Try using OGR_G_CreateGeometryFromJson (if available)
-    OGRGeometryH hGeom = OGR_G_CreateGeometryFromJson(geojson.c_str());
-    if (hGeom) {
-        return hGeom;
-    }
-    
-    // Method 3: Log error and return null
-    spdlog::error("Failed to create geometry from GeoJSON: {}", geojson.substr(0, 200));
+    spdlog::error("Failed to create geometry from GeoJSON");
     return nullptr;
 }
 
@@ -80,7 +131,7 @@ void ConflictController::analyzeProject(int project_id) {
     for (const auto& protection : all_protections) {
         OGRGeometryH hProtGeom = createGeometryFromGeoJSON(protection.protection_geometry);
         if (!hProtGeom) {
-            spdlog::warn("Could not parse protection geometry for procedure {}, skipping", protection.procedure_id);
+            spdlog::warn("Could not parse protection geometry for procedure {}, skipping \n\n protection code \n {}", protection.procedure_id, protection.protection_geometry);
             continue; // Skip invalid protection geometries
         }
         
