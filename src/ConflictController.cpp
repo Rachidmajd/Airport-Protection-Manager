@@ -4,6 +4,7 @@
 #include "ogr_api.h"
 #include "ogr_geometry.h"
 #include "ogr_spatialref.h"
+#include "ProjectRepository.h"
 #include <mutex>
 #include <memory>
 #include <json.hpp>
@@ -243,6 +244,26 @@ void ConflictController::analyzeProject(int project_id) {
 
     spdlog::info("C++ conflict analysis for project {} complete. Found {} conflicts.", project_id, conflicts_found);
     OGR_G_DestroyGeometry(hProjGeom); // Use C API for cleanup
+
+    //updating the project status
+    {
+        auto projectToUpdateOpt = proj_repo.findById(project_id);
+        if (projectToUpdateOpt) {
+            Project projectToUpdate = *projectToUpdateOpt;
+            
+            // 2. Update the status to UnderReview
+            projectToUpdate.status = ProjectStatus::UnderReview;
+            
+            // 3. Save the updated project back to the database
+            if (proj_repo.update(project_id, projectToUpdate)) {
+                spdlog::info("Successfully updated project {} status to UnderReview.", project_id);
+            } else {
+                spdlog::error("Failed to update project {} status after analysis.", project_id);
+            }
+        } else {
+            spdlog::error("Could not find project {} to update its status after analysis.", project_id);
+        }
+    }
 }
 
 } // namespace aeronautical

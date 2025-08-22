@@ -850,14 +850,55 @@ getMockProcedures() {
                 body: JSON.stringify(payload)
             });
             
-            console.log('✅ Project submitted successfully, report received:', result);
-            return result;
+            console.log('✅ Project submitted successfully, status received:', result);
+            return this.pollForAnalysisCompletion(projectId);
     
         } catch (error) {
             console.error(`❌ Failed to submit project ${projectId}:`, error);
             // Re-throw the error so the UI can handle it
             throw error;
         }
+    }
+
+    // --- NEW POLLING FUNCTION ---
+    async pollForAnalysisCompletion(projectId, timeout = 60000, interval = 2000) {
+        const startTime = Date.now();
+
+        return new Promise((resolve, reject) => {
+            const checkStatus = async () => {
+                // Check for timeout
+                if (Date.now() - startTime > timeout) {
+                    clearInterval(intervalId);
+                    reject(new Error('Analysis timed out. Please check the project status later.'));
+                    return;
+                }
+
+                try {
+                    const project = await this.getProject(projectId);
+                    console.log(`Polling... Project ${projectId} status is: ${project.status}`);
+
+                    // The analysis is done when the status is no longer "Pending"
+                    if (project.status !== 'Pending') {
+                        clearInterval(intervalId);
+                        console.log(`✅ Analysis complete! Status: ${project.status}`);
+
+                        // Fetch the final conflicts
+                        const conflicts = await this.getConflicts(projectId);
+
+                        // Resolve with the complete report data
+                        resolve({
+                            project: project,
+                            conflicts: conflicts
+                        });
+                    }
+                } catch (error) {
+                    clearInterval(intervalId);
+                    reject(error);
+                }
+            };
+
+            const intervalId = setInterval(checkStatus, interval);
+        });
     }
 
     async getProjectGeometries(projectId) {

@@ -331,12 +331,7 @@ crow::response ProjectController::submitProject(int id, const crow::request& req
             return errorResponse(404, "Project not found");
         }
         
-        // Check if project can be submitted (must be in Created status)
-        // if (project->status != ProjectStatus::Created) {
-        //     return errorResponse(400, "Project cannot be submitted in current status: " + statusToString(project->status));
-        // }
-        
-                // Validate and save GeoJSON if provided
+        // Validate and save GeoJSON if provided
         if (body.contains("geometry") && !body["geometry"].is_null()) {
             std::string geometryError;
             if (!validateGeoJSON(body["geometry"], geometryError)) {
@@ -372,16 +367,16 @@ crow::response ProjectController::submitProject(int id, const crow::request& req
         // Add project comment for status change
         addProjectComment(id, "Project submitted for review", ProjectStatus::Created, ProjectStatus::Pending);
         
-        // Fetch the updated project
-        auto updatedProject = repository_->findById(id);
-        
+         // 3. Immediately return a 202 Accepted response
+        // This tells the client the request was accepted and is being processed.
         nlohmann::json response;
-        response["message"] = "Project submitted successfully";
-        response["data"] = updatedProject->toJson();
+        response["message"] = "Project submission accepted. Analysis is in progress.";
+        response["data"] = project->toJson(); // Return the project in its "Pending" state
         
-        logger_->info("Submitted project: {} - {} with geometry", updatedProject->project_code, updatedProject->title);
-        
-        return successResponse(response);
+        // Use status code 202 for "Accepted"
+        crow::response res(202, response.dump());
+        res.add_header("Content-Type", "application/json");
+        return res;
         
     } catch (const nlohmann::json::exception& e) {
         logger_->error("Invalid JSON in submit project request: {}", e.what());

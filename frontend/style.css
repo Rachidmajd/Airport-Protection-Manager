@@ -640,3 +640,119 @@ body {
         height: 60vh;
     }
 }
+
+
+/* --- Report Modal Styling --- */
+.report-container {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #333;
+    padding: 20px;
+}
+
+.report-header {
+    text-align: center;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 20px;
+}
+
+.report-header h1 {
+    font-size: 24px;
+    margin: 0;
+}
+
+.report-section {
+    margin-bottom: 30px;
+}
+
+.report-section h2 {
+    font-size: 18px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+}
+
+.report-section table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.report-section th, .report-section td {
+    text-align: left;
+    padding: 10px;
+    border: 1px solid #eee;
+}
+
+.report-section th {
+    background-color: #f9f9f9;
+    font-weight: 600;
+    width: 150px;
+}
+
+.summary {
+    display: flex;
+    gap: 20px;
+}
+
+.summary-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    border-radius: 8px;
+    flex-grow: 1;
+}
+
+.summary-item.no-conflicts {
+    background-color: #f0fff4;
+    border-left: 5px solid #48bb78;
+}
+
+.summary-item.conflicts {
+    background-color: #fffaf0;
+    border-left: 5px solid #f6ad55;
+}
+
+.summary-item .icon {
+    font-size: 28px;
+}
+
+.badge {
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+.badge.penetration { background-color: #fed7d7; color: #c53030; }
+.badge.proximity { background-color: #feebc8; color: #dd6b20; }
+.severity-high { background-color: #e53e3e; color: white; }
+.severity-medium { background-color: #ed8936; color: white; }
+.severity-low { background-color: #ecc94b; color: #333; }
+
+/* --- Print-Specific Styles --- */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    #report-modal, #report-modal * {
+        visibility: visible;
+    }
+    #report-modal {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        border: none;
+        box-shadow: none;
+    }
+    .modal-content {
+        box-shadow: none;
+        border: none;
+    }
+    .modal-header .close-button, .modal-footer {
+        display: none;
+    }
+}

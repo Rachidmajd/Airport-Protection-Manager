@@ -947,25 +947,128 @@ initializeProcedureEvents() {
     }
 
 
-    // This function shows and populates the report
+/**
+ * Generates and displays the project submission report.
+ * @param {object} reportData - The data returned from the backend.
+ * @param {object} project - The active project object.
+ */
 showReportModal(reportData, project) {
+    const reportBody = document.getElementById('report-body');
     const modal = document.getElementById('report-modal');
-    const titleEl = document.getElementById('report-title');
-    const bodyEl = document.getElementById('report-body');
 
-    if (!modal || !titleEl || !bodyEl) return;
+    if (!reportBody || !modal) return;
 
-    // Set the title
-    titleEl.textContent = `Processing Report for: ${project.title}`;
+    // --- Helper function to create the report HTML ---
+    const createReportHTML = (data, proj) => {
+        const conflicts = data.conflicts || [];
+        const hasConflicts = conflicts.length > 0;
 
-    // Generate HTML from the JSON report data (this is an example)
-    let reportHtml = `<h4>Report Generated: ${new Date().toLocaleString()}</h4>`;
-    reportHtml += `<pre><code>${JSON.stringify(reportData, null, 2)}</code></pre>`;
-    bodyEl.innerHTML = reportHtml;
+        // Date formatting
+        const formatDate = (dateString) => {
+            if (!dateString) return 'N/A';
+            return new Date(dateString).toLocaleString();
+        };
 
-    // Show the modal
+        // Main report template
+        return `
+            <div class="report-container">
+                <div class="report-header">
+                    <h1>Preliminary Analysis Report</h1>
+                    <p><strong>Project:</strong> ${proj.title}</p>
+                </div>
+
+                <div class="report-section">
+                    <h2>Project Details</h2>
+                    <table>
+                        <tr>
+                            <th>Project Code</th>
+                            <td>${proj.project_code}</td>
+                            <th>Status</th>
+                            <td><span class="status-badge ${proj.status.toLowerCase()}">${proj.status}</span></td>
+                        </tr>
+                        <tr>
+                            <th>Operation Type</th>
+                            <td>${proj.operation_type || 'N/A'}</td>
+                             <th>Priority</th>
+                            <td>${proj.priority || 'N/A'}</td>
+                        </tr>
+                        <tr>
+                            <th>Start Date</th>
+                            <td>${formatDate(proj.start_date)}</td>
+                             <th>End Date</th>
+                            <td>${formatDate(proj.end_date)}</td>
+                        </tr>
+                        <tr>
+                            <th>Min Altitude</th>
+                            <td>${proj.altitude_min ?? 'N/A'} ft AGL</td>
+                            <th>Max Altitude</th>
+                            <td>${proj.altitude_max ?? 'N/A'} ft AGL</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="report-section">
+                    <h2>Conflict Analysis</h2>
+                    <div class="summary">
+                        <div class="summary-item ${hasConflicts ? 'conflicts' : 'no-conflicts'}">
+                            <span class="icon">${hasConflicts ? '⚠️' : '✅'}</span>
+                            <div>
+                                <strong>${conflicts.length} Conflicts Detected</strong>
+                                <p>${hasConflicts ? 'Review the details below.' : 'No direct conflicts with flight procedures.'}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${hasConflicts ? `
+                    <table class="conflict-table">
+                        <thead>
+                            <tr>
+                                <th>Conflict ID</th>
+                                <th>Affected Procedure</th>
+                                <th>Conflict Type</th>
+                                <th>Severity</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${conflicts.map(conflict => `
+                                <tr>
+                                    <td>${conflict.id}</td>
+                                    <td>${conflict.procedure_code || 'N/A'}</td>
+                                    <td><span class="badge ${conflict.type?.toLowerCase()}">${conflict.type || 'Unknown'}</span></td>
+                                    <td><span class="badge severity-${conflict.severity?.toLowerCase()}">${conflict.severity || 'N/A'}</span></td>
+                                    <td>${conflict.details || 'No additional details.'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    };
+
+    // --- Generate and inject the HTML ---
+    reportBody.innerHTML = createReportHTML(reportData, project);
+
+    // --- Show the modal ---
     modal.classList.remove('hidden');
-    modal.style.display = 'flex';
+
+    // --- Add event listeners for close and print buttons ---
+    const closeModalBtn = document.getElementById('close-report-btn');
+    const printBtn = document.getElementById('print-report-btn');
+
+    const closeHandler = () => {
+        modal.classList.add('hidden');
+        closeModalBtn.removeEventListener('click', closeHandler);
+    };
+
+    const printHandler = () => {
+        window.print();
+    };
+    
+    closeModalBtn.addEventListener('click', closeHandler);
+    printBtn.addEventListener('click', printHandler);
 }
 
 // This function handles closing the modal and printing
