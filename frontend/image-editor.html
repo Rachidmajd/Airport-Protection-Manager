@@ -1,0 +1,49 @@
+<!-- Image Editor Modal -->
+<div id="image-editor-modal" class="modal hidden" role="dialog" aria-labelledby="image-editor-title" aria-hidden="true">
+    <div class="modal-content wide">
+        <div class="modal-header">
+            <h2 id="image-editor-title">Image-based Geometry Creator</h2>
+            <button id="close-image-editor-btn" class="close-button" aria-label="Close dialog">&times;</button>
+        </div>
+        <div class="modal-body image-editor-body">
+            <div class="editor-main-area">
+                <canvas id="image-canvas" class="image-canvas"></canvas>
+            </div>
+            <div class="editor-controls-area">
+                <h4>1. Adjust Image</h4>
+                <div class="control-group">
+                    <label for="rotate-slider">Rotate (<span>0</span>&deg;)</label>
+                    <input type="range" id="rotate-slider" min="-180" max="180" value="0" class="slider">
+                </div>
+
+                <h4>2. Select Area & Run OCR</h4>
+                <p class="instructions">Click and drag on the image to select a region for text recognition.</p>
+                <button id="run-ocr-btn" class="button primary full-width" disabled>Run OCR on Selection</button>
+                <div id="ocr-status" class="ocr-status-text"></div>
+
+                <h4>3. Review & Create Geometry</h4>
+                <div class="control-group">
+                    <label for="ocr-results">Recognized Text:</label>
+                    <textarea id="ocr-results" rows="6" placeholder="OCR results will appear here..."></textarea>
+                </div>
+
+                <div class="control-group">
+                    <label for="geometry-type-selector">Geometry Type:</label>
+                    <select id="geometry-type-selector">
+                        <option value="polygon">Polygon</option>
+                        <option value="path">Path with Width</option>
+                        <option value="points">Points with Radius</option>
+                    </select>
+                </div>
+
+                <div id="geometry-options">
+                    <!-- Options will be dynamically inserted here -->
+                </div>
+
+                <div class="form-actions">
+                    <button id="create-geometry-btn" class="button primary" disabled>Create Geometry</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

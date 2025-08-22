@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aeronautical Deconfliction & Analysis Platform</title>
+    
+    <!-- Third-party CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+    
+    <!-- Application CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- ===== APPLICATION SCREENS ===== -->
+
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="screen loading-screen">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <h2>Aeronautical Deconfliction Platform</h2>
+            <p>Initializing secure aviation analysis system...</p>
+        </div>
+    </div>
+
+    <!-- Login Screen -->
+    <div id="login-screen" class="screen login-screen hidden">
+        <div class="login-container">
+            <div class="login-header">
+                <h1>🛩️ Aviation Platform</h1>
+                <p>Secure access required for aeronautical operations</p>
+            </div>
+            <div class="login-content">
+                <form id="login-form" class="login-form" novalidate>
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" required placeholder="Enter your username" autocomplete="username" autocapitalize="none" spellcheck="false">
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required placeholder="Enter your password" autocomplete="current-password">
+                    </div>
+                    <div id="login-error" class="login-error hidden" role="alert"></div>
+                    <button type="submit" id="login-btn" class="login-button">
+                        <span id="login-btn-text">🔐 Login</span>
+                        <span id="login-spinner" class="login-spinner hidden">⏳ Logging in...</span>
+                    </button>
+                </form>
+                <div class="login-footer">
+                    <p><strong>Test credentials:</strong> testuser / oper</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application Screen -->
+    <div id="app" class="screen app hidden">
+        
+        <!-- Main Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="header-brand"><h1 class="header-title">🛩️</h1></div>
+                <div class="header-project-area">
+                    <div id="project-opener">
+                        <button id="open-project-btn" class="button primary">Open Project</button>
+                    </div>
+                    <div id="project-display" class="hidden">
+                        <div class="project-info">
+                            <span class="project-label">Project:</span>
+                            <span id="project-title-text" class="project-title-text"></span>
+                        </div>
+                        <div class="project-actions">
+                            <div class="dropdown">
+                                <button id="operations-dropdown-btn" class="button secondary dropdown-toggle">Operations ▼</button>
+                                <div id="operations-dropdown-menu" class="dropdown-menu hidden">
+                                    <a href="#" id="edit-project-btn" class="dropdown-item">Edit Project</a>
+                                    <a href="#" id="submit-project-btn" class="dropdown-item">Submit Project</a>
+                                    <a href="#" id="report-project-btn" class="dropdown-item">Generate Report</a>
+                                </div>
+                            </div>
+                            <button id="close-project-btn" class="button secondary danger">&times; Close</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <span id="user-info" class="user-info">Loading...</span>
+                    <button id="logout-btn" class="logout-button">Logout</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <aside class="sidebar">
+                <div class="panel">
+                    <h2 class="panel-title">Flight Procedures</h2>
+                    <div id="procedure-controls">
+                        <div id="procedure-list" class="procedure-list"></div>
+                    </div>
+                </div>
+                <div class="panel">
+                    <h2 class="panel-title">
+                        Conflict Summary
+                        <span id="conflict-count" class="conflict-count zero">0</span>
+                    </h2>
+                    <div id="conflict-list" class="conflict-list">
+                        <div class="no-conflicts"><p>✅ No conflicts detected</p></div>
+                    </div>
+                </div>
+            </aside>
+            <main class="map-container">
+                <div id="map" class="map"></div>
+                <div class="map-tools-container">
+                    <div id="drawing-tools-panel" class="drawing-tools hidden">
+                        <h3>Draw Drone Zone</h3>
+                        <button id="draw-polygon-btn" class="tool-button"><span>📐 Polygon</span></button>
+                        <button id="draw-circle-btn" class="tool-button"><span>⭕ Circle</span></button>
+                    </div>
+                    <div id="import-tools-panel" class="drawing-tools hidden">
+                        <h3>Import Data</h3>
+                        <button id="import-image-btn" class="tool-button"><span>🖼️ Import Image</span></button>
+                        <button id="import-geometry-btn" class="tool-button"><span>📄 Import Geometry</span></button>
+                    </div>
+                </div>
+                <div class="map-status">
+                    <div id="map-coords">Lat: 0.00, Lng: 0.00</div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- ===== MODALS ===== -->
+    <div id="modals-container">
+        <!-- Project Selection List -->
+        <div id="project-list-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="project-list-title">Select a Project</h2>
+                    <button id="close-project-modal-btn" class="close-button">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="project-list-actions">
+                        <button id="new-project-btn" class="button primary full-width">+ New Project</button>
+                    </div>
+                    <div id="project-list-container" class="project-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Project Editor Form -->
+        <div id="project-editor-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="project-editor-title">Create New Project</h2>
+                    <button id="close-project-editor-btn" class="close-button">&times;</button>
+                </div>
+                <form id="project-editor-form" class="modal-body">
+                    <input type="hidden" id="project-id" name="id">
+                    <div class="form-group">
+                        <label for="project-title">Project Title *</label>
+                        <input type="text" id="project-title" name="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="project-description">Description</label>
+                        <textarea id="project-description" name="description" rows="3"></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="project-start-date">Start Date *</label>
+                            <input type="datetime-local" id="project-start-date" name="startDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="project-end-date">End Date *</label>
+                            <input type="datetime-local" id="project-end-date" name="endDate" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="project-altitude-min">Min Altitude (ft AGL)</label>
+                            <input type="number" id="project-altitude-min" name="altitudeMin" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="project-altitude-max">Max Altitude (ft AGL)</label>
+                            <input type="number" id="project-altitude-max" name="altitudeMax" value="400">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                         <div class="form-group">
+                            <label for="project-priority">Priority</label>
+                            <select id="project-priority" name="priority">
+                                <option value="Low">Low</option>
+                                <option value="Normal" selected>Normal</option>
+                                <option value="High">High</option>
+                                <option value="Critical">Critical</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="project-operation-type">Operation Type</label>
+                            <input type="text" id="project-operation-type" name="operationType">
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" id="cancel-project-editor-btn" class="button secondary">Cancel</button>
+                        <button type="submit" class="button primary">Save Project</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Add this to your index.html in the modals-container section -->
+        <div id="drone-form-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Create Drone Zone</h2>
+                    <button id="close-modal" class="close-button">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="drone-zone-form">
+                        <div class="form-group">
+                            <label for="operation-id">Operation ID *</label>
+                            <input type="text" id="operation-id" name="operationId" required>
+                            <div class="form-error" id="operation-id-error"></div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="altitude-min">Min Altitude (ft AGL) *</label>
+                                <input type="number" id="altitude-min" name="altitudeMin" value="0" min="0" max="400" required>
+                                <div class="form-error" id="altitude-min-error"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="altitude-max">Max Altitude (ft AGL) *</label>
+                                <input type="number" id="altitude-max" name="altitudeMax" value="400" min="0" max="400" required>
+                                <div class="form-error" id="altitude-max-error"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="start-time">Start Time *</label>
+                                <input type="datetime-local" id="start-time" name="startTime" required>
+                                <div class="form-error" id="start-time-error"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="end-time">End Time *</label>
+                                <input type="datetime-local" id="end-time" name="endTime" required>
+                                <div class="form-error" id="end-time-error"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="status">Status</label>
+                            <select id="status" name="status" required>
+                                <option value="Planned">Planned</option>
+                                <option value="Active">Active</option>
+                                <option value="Completed">Completed</option>
+                            </select>
+                            <div class="form-error" id="status-error"></div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" id="cancel-drone-form" class="button secondary">Cancel</button>
+                            <button type="submit" class="button primary">Create Drone Zone</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div id="report-modal" class="modal hidden">
+            <div class="modal-content wide">
+                <div class="modal-header">
+                    <h2 id="report-title">Processing Report</h2>
+                    <button id="close-report-btn" class="close-button">&times;</button>
+                </div>
+                <div class="modal-body" id="report-body">
+                    <!-- Report content will be dynamically inserted here -->
+                </div>
+                <div class="form-actions">
+                    <button id="print-report-btn" class="button secondary">🖨️ Print</button>
+                    <button id="export-pdf-btn" class="button primary">📄 Export as PDF</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    
+    <!-- Notification Container -->
+    <div id="notification-container"></div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+    <script src='https://cdn.jsdelivr.net/npm/tesseract.js@2/dist/tesseract.min.js'></script>
+    <script type="module" src="js/main.js"></script>
+    <script>
+        // Screen manager script remains the same
+    </script>
+    <script>
+        // Screen Manager - Add this directly to your HTML
+        window.screenManager = {
+            currentScreen: null,
+            
+            showScreen(screenId) {
+                console.log(`🖥️ Showing screen: ${screenId}`);
+                
+                // Hide all screens first
+                const screens = ['loading-screen', 'login-screen', 'app'];
+                screens.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.classList.add('hidden');
+                        element.style.display = 'none';
+                        console.log(`👁️ Hidden screen: ${id}`);
+                    }
+                });
+                
+                // Show the requested screen
+                const targetScreen = document.getElementById(screenId);
+                if (targetScreen) {
+                    targetScreen.classList.remove('hidden');
+                    targetScreen.style.display = 'flex';
+                    this.currentScreen = screenId;
+                    console.log(`✅ Showing screen: ${screenId}`);
+                } else {
+                    console.error(`❌ Screen not found: ${screenId}`);
+                }
+            },
+            
+            hideScreen(screenId) {
+                console.log(`🙈 Hiding screen: ${screenId}`);
+                const element = document.getElementById(screenId);
+                if (element) {
+                    element.classList.add('hidden');
+                    element.style.display = 'none';
+                }
+            },
+            
+            getCurrentScreen() {
+                return this.currentScreen;
+            }
+        };
+        
+        // Initialize with loading screen
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('📺 Screen manager initialized');
+            window.screenManager.showScreen('loading-screen');
+        });
+        </script>
+</body>
+</html>

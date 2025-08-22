@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Keycloak Load Test</title>
+</head>
+<body>
+    <h1>Keycloak Load Test</h1>
+    <div id="result">Testing...</div>
+
+    <script src="https://unpkg.com/keycloak-js@21.1.0/dist/keycloak.js"></script>
+    <script>
+        setTimeout(() => {
+            const result = document.getElementById('result');
+            if (typeof Keycloak !== 'undefined') {
+                result.innerHTML = '✅ Keycloak loaded successfully!';
+                console.log('Keycloak version:', Keycloak);
+                
+                // Test creating instance
+                try {
+                    const kc = new Keycloak({
+                        url: 'http://192.168.56.105/keycloak/',
+                        realm: 'aviation',
+                        clientId: 'aeronautical-platform'
+                    });
+                    result.innerHTML += '<br>✅ Keycloak instance created!';
+                } catch (error) {
+                    result.innerHTML += '<br>❌ Failed to create Keycloak instance: ' + error;
+                }
+            } else {
+                result.innerHTML = '❌ Keycloak not loaded';
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
