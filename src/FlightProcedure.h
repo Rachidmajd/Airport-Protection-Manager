@@ -178,4 +178,69 @@ struct FlightProcedure {
 std::string timePointToString(const std::chrono::system_clock::time_point& tp);
 std::chrono::system_clock::time_point stringToTimePoint(const std::string& str);
 
+struct Conflict {
+    int id;
+    int project_id;
+    int flight_procedure_id;
+    std::string conflicting_geometry; // Storing as a string (e.g., WKT or GeoJSON)
+    std::optional<std::string> description;
+    
+    // Timestamps are managed by the database but can be useful to hold in the object
+    std::chrono::system_clock::time_point created_at;
+    std::chrono::system_clock::time_point updated_at;
+
+    /**
+     * @brief Converts the Conflict struct to a JSON object.
+     * * @return nlohmann::json The conflict data as a JSON object.
+     */
+    nlohmann::json toJson() const {
+        nlohmann::json j;
+        j["id"] = id;
+        j["project_id"] = project_id;
+        j["flight_procedure_id"] = flight_procedure_id;
+        j["conflicting_geometry"] = conflicting_geometry;
+        
+        if (description) {
+            j["description"] = *description;
+        } else {
+            j["description"] = nullptr;
+        }
+
+        j["created_at"] = timePointToString(created_at);
+        j["updated_at"] = timePointToString(updated_at);
+        return j;
+    }
+
+    /**
+     * @brief Creates a Conflict struct from a JSON object.
+     * * @param j The JSON object to parse.
+     * @return Conflict A new Conflict object.
+     */
+    static Conflict fromJson(const nlohmann::json& j) {
+        Conflict c;
+        c.id = j.value("id", 0);
+        c.project_id = j.at("project_id");
+        c.flight_procedure_id = j.at("flight_procedure_id");
+        c.conflicting_geometry = j.at("conflicting_geometry");
+
+        if (j.contains("description") && !j["description"].is_null()) {
+            c.description = j["description"].get<std::string>();
+        }
+
+        if (j.contains("created_at") && !j["created_at"].is_null()) {
+            c.created_at = stringToTimePoint(j["created_at"]);
+        }
+
+        if (j.contains("updated_at") && !j["updated_at"].is_null()) {
+            c.updated_at = stringToTimePoint(j["updated_at"]);
+        }
+        
+        return c;
+    }
+};
+
+
+
+
+
 } // namespace aeronautical

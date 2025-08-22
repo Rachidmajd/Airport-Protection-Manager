@@ -28,6 +28,38 @@ ConflictController& ConflictController::getInstance() {
     return *instance_;
 }
 
+void ConflictController::registerRoutes(crow::SimpleApp& app) {
+    auto logger_ = spdlog::get("aeronautical");
+
+    // GET /api/projects/:id/conflicts
+    CROW_ROUTE(app, "/api/projects/<int>/conflicts")
+        .methods(crow::HTTPMethod::GET)
+        ([this](int project_id) {
+            return getConflictsByProject(project_id);
+        });
+
+    logger_->info("Conflict routes registered");
+}
+
+crow::response ConflictController::getConflictsByProject(int project_id) {
+    auto logger_ = spdlog::get("aeronautical");
+    try {
+        
+        auto conflicts = repository_->findByProjectId(project_id);
+        
+        nlohmann::json response_data = nlohmann::json::array();
+        for (const auto& conflict : conflicts) {
+            response_data.push_back(conflict.toJson());
+        }
+        
+        return crow::response(200, response_data.dump());
+
+    } catch (const std::exception& e) {
+        logger_->error("Failed to get conflicts for project {}: {}", project_id, e.what());
+        return crow::response(500, "{\"error\":\"Internal server error\"}");
+    }
+}
+
 // Helper function to create geometry from GeoJSON - FIXED to handle FeatureCollections
 OGRGeometryH createGeometryFromGeoJSON(const std::string& geojson) {
     try {

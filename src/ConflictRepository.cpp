@@ -103,4 +103,45 @@ bool ConflictRepository::create(int project_id, int procedure_id, const std::str
     }
 }
 
+
+// Maps a MYSQL_ROW to a Conflict struct
+Conflict ConflictRepository::rowToConflict(MYSQL_ROW row) {
+    Conflict conflict;
+    // Column order: id, project_id, flight_procedure_id, conflicting_geometry, description, created_at, updated_at
+    conflict.id = row[0] ? std::stoi(row[0]) : 0;
+    conflict.project_id = row[1] ? std::stoi(row[1]) : 0;
+    conflict.flight_procedure_id = row[2] ? std::stoi(row[2]) : 0;
+    conflict.conflicting_geometry = row[3] ? row[3] : "";
+    
+    if (row[4]) {
+        conflict.description = std::string(row[4]);
+    } else {
+        conflict.description = std::nullopt;
+    }
+
+    conflict.created_at = row[5] ? stringToTimePoint(row[5]) : std::chrono::system_clock::now();
+    conflict.updated_at = row[6] ? stringToTimePoint(row[6]) : std::chrono::system_clock::now();
+    
+    return conflict;
+}
+
+
+std::vector<Conflict> ConflictRepository::findByProjectId(int project_id) {
+    std::vector<Conflict> conflicts;
+    auto& db = DatabaseManager::getInstance();
+    
+    std::stringstream query;
+    query << "SELECT * FROM conflicts WHERE project_id = " << project_id;
+
+    MYSQL_RES* result = db.executeSelectQuery(query.str());
+    if (result) {
+        MYSQL_ROW row;
+        while ((row = mysql_fetch_row(result))) {
+            conflicts.push_back(rowToConflict(row));
+        }
+        mysql_free_result(result);
+    }
+    return conflicts;
+}
+
 } // namespace aeronautical

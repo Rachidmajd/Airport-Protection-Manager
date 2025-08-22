@@ -1,5 +1,6 @@
 #pragma once
 
+#include <crow.h>
 #include "ConflictRepository.h"
 #include "ProjectRepository.h"
 #include "FlightProcedureRepository.h"
@@ -18,6 +19,9 @@ public:
     ConflictController& operator=(const ConflictController&) = delete;
 
     void analyzeProject(int project_id);
+
+    void registerRoutes(crow::SimpleApp& app);
+    crow::response getConflictsByProject(int project_id);
 
 private:
     ConflictController(); // Make the constructor private

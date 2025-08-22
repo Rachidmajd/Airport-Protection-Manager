@@ -107,6 +107,12 @@ int main(int argc, char* argv[]) {
         aeronautical::FlightProcedureController procedureController;
         procedureController.registerRoutes(app);
         logger->info("Flight procedure controller registered");
+
+
+        // Register the new ConflictController routes
+        aeronautical::ConflictController::getInstance().registerRoutes(app);
+        logger->info("Conflict controller registered");
+        // --- MODIFICATION END ---
         
         // TODO: Add more controllers as needed
         // aeronautical::GeometryController geometryController;
