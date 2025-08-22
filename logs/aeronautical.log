@@ -1025,3 +1025,220 @@
 [2025-08-19 08:55:32.126] [aeronautical] [info] Flight procedure routes registered
 [2025-08-19 08:55:32.127] [aeronautical] [info] Flight procedure controller registered
 [2025-08-19 08:55:32.127] [aeronautical] [info] Starting server on port 8081
+[2025-08-22 04:10:38.032] [aeronautical] [info] ===== Aeronautical Platform Backend Starting =====
+[2025-08-22 04:10:38.032] [aeronautical] [info] Connecting to database at localhost:3306/aeronautical_platform
+[2025-08-22 04:10:38.036] [aeronautical] [info] Database connection established to localhost:3306/aeronautical_platform (MySQL C API)
+[2025-08-22 04:10:38.036] [aeronautical] [info] Project routes registered
+[2025-08-22 04:10:38.036] [aeronautical] [info] Project controller registered
+[2025-08-22 04:10:38.036] [aeronautical] [info] Flight procedure routes registered
+[2025-08-22 04:10:38.036] [aeronautical] [info] Flight procedure controller registered
+[2025-08-22 04:10:38.036] [aeronautical] [info] Starting server on port 8081
+[2025-08-22 04:11:02.318] [aeronautical] [info] Successfully saved/updated geometry collection for project 10
+[2025-08-22 04:11:02.318] [aeronautical] [info] Received geometry payload for project ID 10:
+{
+  "geometry": {
+    "features": [
+      {
+        "geometry": {
+          "coordinates": [
+            [
+              [
+                -8.05727005004883,
+                31.631715880819815
+              ],
+              [
+                -8.052978515625002,
+                31.63613707960456
+              ],
+              [
+                -8.046755790710451,
+                31.633871698216794
+              ],
+              [
+                -8.048171997070314,
+                31.630656223444795
+              ],
+              [
+                -8.05727005004883,
+                31.631715880819815
+              ]
+            ]
+          ],
+          "type": "Polygon"
+        },
+        "properties": {
+          "shapeType": "polygon"
+        },
+        "type": "Feature"
+      }
+    ],
+    "type": "FeatureCollection"
+  }
+}
+[2025-08-22 04:11:02.337] [aeronautical] [info] Updated project with ID 10
+[2025-08-22 04:11:02.337] [aeronautical] [info] Launching background conflict analysis for project ID: 10
+[2025-08-22 04:11:02.339] [aeronautical] [info] Starting C++ conflict analysis for project ID: 10
+[2025-08-22 04:11:02.342] [aeronautical] [info] Found 2 active flight procedure protections for analysis.
+[2025-08-22 04:11:02.360] [aeronautical] [info] C++ conflict analysis for project 10 complete. Found 2 conflicts.
+[2025-08-22 04:11:02.381] [aeronautical] [info] Submitted project: PROJ-2025-001 - Downtown Construction Survey 1 with geometry
+[2025-08-22 04:13:54.479] [aeronautical] [info] Successfully saved/updated geometry collection for project 10
+[2025-08-22 04:13:54.479] [aeronautical] [info] Received geometry payload for project ID 10:
+{
+  "geometry": {
+    "features": [
+      {
+        "geometry": {
+          "coordinates": [
+            [
+              [
+                -8.05727005004883,
+                31.631715880819815
+              ],
+              [
+                -8.052978515625002,
+                31.63613707960456
+              ],
+              [
+                -8.046755790710451,
+                31.633871698216794
+              ],
+              [
+                -8.048171997070314,
+                31.630656223444795
+              ],
+              [
+                -8.05727005004883,
+                31.631715880819815
+              ]
+            ]
+          ],
+          "type": "Polygon"
+        },
+        "properties": {
+          "shapeType": "polygon"
+        },
+        "type": "Feature"
+      }
+    ],
+    "type": "FeatureCollection"
+  }
+}
+[2025-08-22 04:13:54.499] [aeronautical] [info] Updated project with ID 10
+[2025-08-22 04:13:54.499] [aeronautical] [info] Launching background conflict analysis for project ID: 10
+[2025-08-22 04:13:54.499] [aeronautical] [info] Starting C++ conflict analysis for project ID: 10
+[2025-08-22 04:13:54.540] [aeronautical] [info] Found 2 active flight procedure protections for analysis.
+[2025-08-22 04:13:54.547] [aeronautical] [info] C++ conflict analysis for project 10 complete. Found 2 conflicts.
+[2025-08-22 04:13:54.580] [aeronautical] [info] Submitted project: PROJ-2025-001 - Downtown Construction Survey 1 with geometry
+[2025-08-22 04:21:16.879] [aeronautical] [info] ===== Aeronautical Platform Backend Starting =====
+[2025-08-22 04:21:16.879] [aeronautical] [info] Connecting to database at localhost:3306/aeronautical_platform
+[2025-08-22 04:21:16.881] [aeronautical] [info] Database connection established to localhost:3306/aeronautical_platform (MySQL C API)
+[2025-08-22 04:21:16.881] [aeronautical] [info] Project routes registered
+[2025-08-22 04:21:16.881] [aeronautical] [info] Project controller registered
+[2025-08-22 04:21:16.881] [aeronautical] [info] Flight procedure routes registered
+[2025-08-22 04:21:16.881] [aeronautical] [info] Flight procedure controller registered
+[2025-08-22 04:21:16.881] [aeronautical] [info] Starting server on port 8081
+[2025-08-22 04:21:46.154] [aeronautical] [info] Successfully saved/updated geometry collection for project 10
+[2025-08-22 04:21:46.154] [aeronautical] [info] Received geometry payload for project ID 10:
+{
+  "geometry": {
+    "features": [
+      {
+        "geometry": {
+          "coordinates": [
+            [
+              [
+                -8.05727005004883,
+                31.631715880819815
+              ],
+              [
+                -8.052978515625002,
+                31.63613707960456
+              ],
+              [
+                -8.046755790710451,
+                31.633871698216794
+              ],
+              [
+                -8.048171997070314,
+                31.630656223444795
+              ],
+              [
+                -8.05727005004883,
+                31.631715880819815
+              ]
+            ]
+          ],
+          "type": "Polygon"
+        },
+        "properties": {
+          "shapeType": "polygon"
+        },
+        "type": "Feature"
+      }
+    ],
+    "type": "FeatureCollection"
+  }
+}
+[2025-08-22 04:21:46.209] [aeronautical] [info] Updated project with ID 10
+[2025-08-22 04:21:46.209] [aeronautical] [info] Launching background conflict analysis for project ID: 10
+[2025-08-22 04:21:46.214] [aeronautical] [info] Starting C++ conflict analysis for project ID: 10
+[2025-08-22 04:21:46.219] [aeronautical] [info] Found 2 active flight procedure protections for analysis.
+[2025-08-22 04:21:46.234] [aeronautical] [warning] Fixing invalid direct geometry
+[2025-08-22 04:21:46.239] [aeronautical] [warning] Fixing invalid direct geometry
+[2025-08-22 04:21:46.245] [aeronautical] [error] Query failed: INSERT INTO conflicts (project_id, flight_procedure_id, description, conflicting_geometry) VALUES (10, 2, 'Conflict with procedure 2 in protection area \'MXRNP28 - GMMX RNP10 Protection Zone\'.', '{ "type": "Polygon", "coordinates": [ [ [ -8.05727005004883, 31.631715880819815, 0.0 ], [ -8.054737339281244, 31.634325114875026, 0.0 ], [ -8.047585513792667, 31.631987824712038, 0.0 ], [ -8.048171997070314, 31.630656223444795, 0.0 ], [ -8.05727005004883, 31.631715880819815, 0.0 ] ] ] }'); - Error Code: 1416, SQLSTATE: 22003, Message: 'Cannot get geometry object from data you send to the GEOMETRY field'
+[2025-08-22 04:21:46.245] [aeronautical] [error] Failed to insert conflict record for project 10 and procedure 2
+[2025-08-22 04:21:46.245] [aeronautical] [error] Failed to save conflict to database for project 10 and procedure 2
+[2025-08-22 04:21:46.245] [aeronautical] [info] C++ conflict analysis for project 10 complete. Found 1 conflicts.
+[2025-08-22 04:21:46.301] [aeronautical] [info] Submitted project: PROJ-2025-001 - Downtown Construction Survey 1 with geometry
+[2025-08-22 04:38:22.702] [aeronautical] [info] Successfully saved/updated geometry collection for project 10
+[2025-08-22 04:38:22.702] [aeronautical] [info] Received geometry payload for project ID 10:
+{
+  "geometry": {
+    "features": [
+      {
+        "geometry": {
+          "coordinates": [
+            [
+              [
+                -8.05727005004883,
+                31.631715880819815
+              ],
+              [
+                -8.052978515625002,
+                31.63613707960456
+              ],
+              [
+                -8.046755790710451,
+                31.633871698216794
+              ],
+              [
+                -8.048171997070314,
+                31.630656223444795
+              ],
+              [
+                -8.05727005004883,
+                31.631715880819815
+              ]
+            ]
+          ],
+          "type": "Polygon"
+        },
+        "properties": {
+          "shapeType": "polygon"
+        },
+        "type": "Feature"
+      }
+    ],
+    "type": "FeatureCollection"
+  }
+}
+[2025-08-22 04:38:22.723] [aeronautical] [info] Updated project with ID 10
+[2025-08-22 04:38:22.723] [aeronautical] [info] Launching background conflict analysis for project ID: 10
+[2025-08-22 04:38:22.724] [aeronautical] [info] Starting C++ conflict analysis for project ID: 10
+[2025-08-22 04:38:22.730] [aeronautical] [info] Found 2 active flight procedure protections for analysis.
+[2025-08-22 04:38:22.733] [aeronautical] [warning] Fixing invalid direct geometry
+[2025-08-22 04:38:22.739] [aeronautical] [warning] Fixing invalid direct geometry
+[2025-08-22 04:38:22.763] [aeronautical] [info] Successfully created conflict record for project 10 and procedure 2
+[2025-08-22 04:38:22.763] [aeronautical] [info] Saved conflict for project 10 with procedure 2
+[2025-08-22 04:38:22.763] [aeronautical] [info] C++ conflict analysis for project 10 complete. Found 1 conflicts.
+[2025-08-22 04:38:22.785] [aeronautical] [info] Submitted project: PROJ-2025-001 - Downtown Construction Survey 1 with geometry
