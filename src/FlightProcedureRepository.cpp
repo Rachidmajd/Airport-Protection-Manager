@@ -605,8 +605,35 @@ std::vector<ProcedureProtection> FlightProcedureRepository::findAllActiveProtect
                 std::string description = row[col] ? std::string(row[col]) : ""; col++; // description (optional)
                 
                 // The protection_geometry field - this is what we need!
-                protection.protection_geometry = row[col] ? std::string(row[col]) : "{}"; col++;
-                
+                std::string protection_geometry_str = row[col] ? std::string(row[col]) : "{}"; col++;
+
+                try {
+                    nlohmann::json feature_collection = nlohmann::json::parse(protection_geometry_str);
+                    
+                    if (feature_collection.contains("features") && feature_collection["features"].is_array()) {
+                        nlohmann::json multi_polygon_coords = nlohmann::json::array();
+                        
+                        for (const auto& feature : feature_collection["features"]) {
+                            if (feature.contains("geometry") && feature["geometry"]["type"] == "Polygon") {
+                                multi_polygon_coords.push_back(feature["geometry"]["coordinates"]);
+                            }
+                        }
+                        
+                        nlohmann::json multi_polygon_geom = {
+                            {"type", "MultiPolygon"},
+                            {"coordinates", multi_polygon_coords}
+                        };
+                        
+                        protection.protection_geometry = multi_polygon_geom.dump();
+                    } else {
+                        // If it's not a FeatureCollection, use it as is (or handle as an error)
+                        protection.protection_geometry = protection_geometry_str;
+                    }
+                } catch (const std::exception& e) {
+                    logger_->warn("Could not parse protection geometry for procedure {}: {}", protection.procedure_id, e.what());
+                    protection.protection_geometry = "{}"; // Assign empty geometry
+                }
+
                 // Set default values for protection-specific fields
                 protection.id = protection.procedure_id; // Use same ID
                 protection.protection_name = procedure_code + " - " + procedure_name + " Protection Zone";

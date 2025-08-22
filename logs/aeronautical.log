@@ -1017,3 +1017,11 @@
 }
 [2025-08-19 08:51:55.435] [aeronautical] [info] C++ conflict analysis for project 10 complete. Found 0 conflicts.
 [2025-08-19 08:51:55.471] [aeronautical] [info] Submitted project: PROJ-2025-001 - Downtown Construction Survey 1 with geometry
+[2025-08-19 08:55:32.120] [aeronautical] [info] ===== Aeronautical Platform Backend Starting =====
+[2025-08-19 08:55:32.120] [aeronautical] [info] Connecting to database at localhost:3306/aeronautical_platform
+[2025-08-19 08:55:32.126] [aeronautical] [info] Database connection established to localhost:3306/aeronautical_platform (MySQL C API)
+[2025-08-19 08:55:32.126] [aeronautical] [info] Project routes registered
+[2025-08-19 08:55:32.126] [aeronautical] [info] Project controller registered
+[2025-08-19 08:55:32.126] [aeronautical] [info] Flight procedure routes registered
+[2025-08-19 08:55:32.127] [aeronautical] [info] Flight procedure controller registered
+[2025-08-19 08:55:32.127] [aeronautical] [info] Starting server on port 8081

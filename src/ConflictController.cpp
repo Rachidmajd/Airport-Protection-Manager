@@ -49,6 +49,15 @@ OGRGeometryH createGeometryFromGeoJSON(const std::string& geojson) {
                 OGRGeometry* geom = OGRGeometryFactory::createFromGeoJson(geom_str.c_str());
                 
                 if (geom) {
+                    // Fix invalid geometries before adding
+                    if (!geom->IsValid()) {
+                        spdlog::warn("Fixing invalid geometry in FeatureCollection");
+                        OGRGeometry* fixed = geom->Buffer(0); // Buffer(0) can fix self-intersections
+                        if (fixed) {
+                            delete geom;
+                            geom = fixed;
+                        }
+                    }
                     collection->addGeometry(geom);
                     delete geom; // Collection takes ownership, but we need to clean up our pointer
                 }
@@ -78,10 +87,32 @@ OGRGeometryH createGeometryFromGeoJSON(const std::string& geojson) {
             
             std::string geom_str = j["geometry"].dump();
             OGRGeometry* geometry = OGRGeometryFactory::createFromGeoJson(geom_str.c_str());
+            
+            // Fix invalid geometry
+            if (geometry && !geometry->IsValid()) {
+                spdlog::warn("Fixing invalid Feature geometry");
+                OGRGeometry* fixed = geometry->Buffer(0);
+                if (fixed) {
+                    delete geometry;
+                    geometry = fixed;
+                }
+            }
+            
             return (OGRGeometryH)geometry;
         } else {
             // Try to parse it as a direct geometry
             OGRGeometry* geometry = OGRGeometryFactory::createFromGeoJson(geojson.c_str());
+            
+            // Fix invalid geometry
+            if (geometry && !geometry->IsValid()) {
+                spdlog::warn("Fixing invalid direct geometry");
+                OGRGeometry* fixed = geometry->Buffer(0);
+                if (fixed) {
+                    delete geometry;
+                    geometry = fixed;
+                }
+            }
+            
             if (geometry) {
                 return (OGRGeometryH)geometry;
             }
@@ -123,41 +154,87 @@ void ConflictController::analyzeProject(int project_id) {
         spdlog::error("Could not parse project geometry for project {}.", project_id);
         return;
     }
+    
     // Cast the C handle to a C++ object pointer
     OGRGeometry *project_geometry = (OGRGeometry *)hProjGeom;
+    
+    // Validate and fix project geometry if needed
+    if (!project_geometry->IsValid()) {
+        spdlog::warn("Project geometry is invalid, attempting to fix");
+        OGRGeometry* fixed = project_geometry->Buffer(0);
+        if (fixed) {
+            OGR_G_DestroyGeometry(hProjGeom);
+            hProjGeom = (OGRGeometryH)fixed;
+            project_geometry = fixed;
+        }
+    }
 
     int conflicts_found = 0;
     // 4. Loop through each protection zone
     for (const auto& protection : all_protections) {
         OGRGeometryH hProtGeom = createGeometryFromGeoJSON(protection.protection_geometry);
         if (!hProtGeom) {
-            spdlog::warn("Could not parse protection geometry for procedure {}, skipping \n\n protection code \n {}", protection.procedure_id, protection.protection_geometry);
+            spdlog::warn("Could not parse protection geometry for procedure {}, skipping", protection.procedure_id);
             continue; // Skip invalid protection geometries
         }
         
         OGRGeometry *protection_geometry = (OGRGeometry *)hProtGeom;
+        
+        // Validate and fix protection geometry if needed
+        if (!protection_geometry->IsValid()) {
+            spdlog::warn("Protection geometry for procedure {} is invalid, attempting to fix", protection.procedure_id);
+            OGRGeometry* fixed = protection_geometry->Buffer(0);
+            if (fixed) {
+                OGR_G_DestroyGeometry(hProtGeom);
+                hProtGeom = (OGRGeometryH)fixed;
+                protection_geometry = fixed;
+            }
+        }
 
         // 5. THE CORE CHECK: Use GDAL's Intersects() method
-        if (project_geometry->Intersects(protection_geometry)) {
+        bool intersects = false;
+        try {
+            intersects = project_geometry->Intersects(protection_geometry);
+        } catch (const std::exception& e) {
+            spdlog::error("Exception during intersection check: {}", e.what());
+            OGR_G_DestroyGeometry(hProtGeom);
+            continue;
+        }
+        
+        if (intersects) {
             conflicts_found++;
             
-            OGRGeometryH hIntersection = OGR_G_Intersection(hProjGeom, hProtGeom);
-            if (hIntersection) {
-                char* intersection_json = nullptr;
-                
-                // For GDAL 3.0.4, use OGR_G_ExportToJson
-                intersection_json = OGR_G_ExportToJson(hIntersection);
-                
-                std::string description = "Conflict with procedure " + std::to_string(protection.procedure_id) 
-                                        + " in protection area '" + protection.protection_name + "'.";
-
-                repository_->create(project_id, protection.procedure_id, description, 
-                                  intersection_json ? intersection_json : "{}");
-
-                if (intersection_json) {
-                    CPLFree(intersection_json);
+            // Try to compute intersection, but save conflict even if intersection fails
+            OGRGeometryH hIntersection = nullptr;
+            std::string intersection_json = "{}";
+            
+            try {
+                hIntersection = OGR_G_Intersection(hProjGeom, hProtGeom);
+                if (hIntersection) {
+                    char* json_str = OGR_G_ExportToJson(hIntersection);
+                    if (json_str) {
+                        intersection_json = json_str;
+                        CPLFree(json_str);
+                    }
+                    OGR_G_DestroyGeometry(hIntersection);
                 }
-                OGR_G_DestroyGeometry(hIntersection); // Use C API for cleanup
+            } catch (const std::exception& e) {
+                spdlog::warn("Failed to compute intersection geometry: {}", e.what());
+                // Continue anyway - we still want to record the conflict
+            }
+            
+            // Even if we couldn't compute the exact intersection, 
+            // we still know there's a conflict, so save it
+            std::string description = "Conflict with procedure " + std::to_string(protection.procedure_id) 
+                                    + " in protection area '" + protection.protection_name + "'.";
+            
+            // Save the conflict (with or without intersection geometry)
+            if (!repository_->create(project_id, protection.procedure_id, description, intersection_json)) {
+                spdlog::error("Failed to save conflict to database for project {} and procedure {}", 
+                             project_id, protection.procedure_id);
+            } else {
+                spdlog::info("Saved conflict for project {} with procedure {}", 
+                            project_id, protection.procedure_id);
             }
         }
         
