@@ -1,6 +1,6 @@
 # Ignore directories
 /bin/
-/cmakefiles/
+/CMakeFiles/
 /logs/
 
 # Ignore specific files
