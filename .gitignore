@@ -1,0 +1,9 @@
+# Ignore directories
+/bin/
+/cmakefiles/
+/logs/
+
+# Ignore specific files
+CMakeCache.txt
+Makefile
+cmake_install.cmake
