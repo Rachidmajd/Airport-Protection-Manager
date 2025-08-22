@@ -54,3 +54,25 @@ The application will be accessible at `http://localhost:18080` by default.
 ---
 
 ##  project-structure
+.
+├── CMakeLists.txt
+├── frontend
+│   ├── index.html
+│   ├── style.css
+│   └── js
+│       └── main.js
+└── src
+├── main.cpp
+├── ... (C++ source files)
+└── third_party
+├── asio
+├── crow
+└── json
+
+
+---
+
+## ⚖️ License
+
+This project is licensed under the **GNU General Public License v3.0**. See the [LICENSE](LICENSE) file for details.
+
