@@ -65,6 +65,37 @@ async init() {
     }
 }
 
+async createNewProject(projectData) {
+    try {
+        const user = authManager.getUser();
+        if (user) {
+            // Add all necessary demander fields from the user object
+            projectData.demander_id = parseInt(user.id, 1);
+            projectData.demander_name = user.fullName;
+            projectData.demander_organization = user.organization;
+            projectData.demander_email = user.email;
+        }
+
+        showLoading(true);
+        const newProject = await apiClient.createProject(projectData);
+
+        if (newProject && newProject.id) {
+            await this.loadProjects();
+            await this.setActiveProject(newProject.id);
+            showNotification('Project created and opened successfully!', 'success');
+        } else {
+            // Use a more specific error message if available
+            const errorMessage = newProject?.message || 'Failed to create project. Check console for details.';
+            showNotification(errorMessage, 'error');
+        }
+    } catch (error) {
+        console.error('Error creating project:', error);
+        showNotification(`Error: ${error.message}`, 'error');
+    } finally {
+        showLoading(false);
+    }
+}
+
 async refreshAllData() {
     try {
         console.log('🔄 Refreshing all application data...');

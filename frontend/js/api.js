@@ -157,31 +157,44 @@ class ApiClient {
     }
 
     async createProject(projectData) {
-        console.log('📝 Creating new project...', projectData);
-        
+        console.log('📝 Creating new project with data:', projectData);
+    
+        // Map frontend camelCase names to backend snake_case names
+        const payload = {
+            title: projectData.title,
+            description: projectData.description,
+            start_date: projectData.startDate,
+            end_date: projectData.endDate,
+            altitude_min: projectData.altitudeMin,
+            altitude_max: projectData.altitudeMax,
+            priority: projectData.priority,
+            operation_type: projectData.operationType,
+            demander_id: projectData.demander_id,
+            demander_name: projectData.demander_name,
+            demander_organization: projectData.demander_organization,
+            demander_email: projectData.demander_email
+        };
+    
         try {
-            console.log('🔄 Attempting to create in database...');
+            console.log('🔄 Attempting to create in database with payload:', payload);
             const response = await this.request('/projects', {
                 method: 'POST',
-                body: JSON.stringify(projectData)
+                body: JSON.stringify(payload)
             });
-            
+    
             const project = response.data || response;
             this.dataSource = 'database';
-            
+    
             console.log('✅ Successfully created project in DATABASE:', project);
             return project;
-            
+    
         } catch (error) {
-            console.warn(`⚠️ Database create failed: ${error.message}`);
+            console.error(`⚠️ Database create failed: ${error.message}`);
+            // Log the full error to see backend validation messages
+            console.error('Full error response:', error);
             
-            // Fallback to mock creation
-            console.log('🔄 Creating mock project...');
-            this.dataSource = 'mock';
-            
-            const mockProject = this.createMockProject(projectData);
-            console.log('⚠️ Created mock project:', mockProject);
-            return mockProject;
+            // Re-throw the error so the UI can display a helpful message
+            throw error;
         }
     }
 

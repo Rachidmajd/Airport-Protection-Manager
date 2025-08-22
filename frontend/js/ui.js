@@ -528,6 +528,8 @@ class UIManager {
         const modal = document.getElementById('drone-form-modal');
         const closeBtn = document.getElementById('close-modal');
         const cancelBtn = document.getElementById('cancel-drone-form');
+        const closeProjectEditorBtn = document.getElementById('close-project-editor-btn');
+        const cancelProjectEditorBtn = document.getElementById('cancel-project-editor-btn');
 
         [closeBtn, cancelBtn].forEach(btn => {
             if (btn) btn.addEventListener('click', (e) => {
@@ -545,12 +547,20 @@ class UIManager {
                 this.hideDroneZoneForm();
             }
         });
+
+        if (closeProjectEditorBtn) {
+            closeProjectEditorBtn.addEventListener('click', () => this.hideProjectEditorModal());
+        }
+        if (cancelProjectEditorBtn) {
+            cancelProjectEditorBtn.addEventListener('click', () => this.hideProjectEditorModal());
+        }
     }
 
     setupProjectModalHandlers() {
         const openBtn = document.getElementById('open-project-btn');
         const closeBtn = document.getElementById('close-project-modal-btn');
         const modal = document.getElementById('project-list-modal');
+        const newProjectBtn = document.getElementById('new-project-btn'); //
 
         if (openBtn) openBtn.addEventListener('click', () => this.showProjectListModal());
         if (closeBtn) closeBtn.addEventListener('click', () => this.hideProjectListModal());
@@ -562,6 +572,9 @@ class UIManager {
         if (closeProjectBtn) closeProjectBtn.addEventListener('click', () => {
             if (window.aeronauticalApp) window.aeronauticalApp.closeActiveProject();
         });
+        if (newProjectBtn) {
+            newProjectBtn.addEventListener('click', () => this.showProjectEditorModal());
+        }
     }
     
     setupOperationsDropdown() {
@@ -581,6 +594,27 @@ class UIManager {
             });
         }
     }
+
+    showProjectEditorModal() {
+        const modal = document.getElementById('project-editor-modal');
+        if (modal) {
+            document.getElementById('project-editor-form').reset();
+            document.getElementById('project-editor-title').textContent = 'Create New Project';
+            modal.classList.remove('hidden');
+            modal.setAttribute('aria-hidden', 'false');
+            modal.style.display = 'flex';
+        }
+    }
+    
+    hideProjectEditorModal() {
+        const modal = document.getElementById('project-editor-modal');
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.setAttribute('aria-hidden', 'true');
+            modal.style.display = 'none';
+        }
+    }
+
 
     showProjectListModal() {
         const modal = document.getElementById('project-list-modal');
@@ -710,7 +744,41 @@ initializeProcedureEvents() {
             });
             this.setupFormValidation();
         }
+
+        const projectForm = document.getElementById('project-editor-form');
+        if (projectForm) {
+            projectForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.handleProjectFormSubmit();
+            });
+        }
+
         this.setDefaultFormTimes();
+    }
+
+    async handleProjectFormSubmit() {
+        const form = document.getElementById('project-editor-form');
+        const formData = new FormData(form);
+    
+        const altitudeMin = formData.get('altitudeMin');
+        const altitudeMax = formData.get('altitudeMax');
+    
+        const projectData = {
+            id: formData.get('id'),
+            title: formData.get('title'),
+            description: formData.get('description'),
+            startDate: formData.get('startDate'),
+            endDate: formData.get('endDate'),
+            altitudeMin: altitudeMin ? parseInt(altitudeMin, 10) : 0,
+            altitudeMax: altitudeMax ? parseInt(altitudeMax, 10) : 400, // Default to 400 if empty
+            priority: formData.get('priority'),
+            operationType: formData.get('operationType'),
+        };
+    
+        if (window.aeronauticalApp) {
+            await window.aeronauticalApp.createNewProject(projectData);
+        }
+        this.hideProjectEditorModal();
     }
 
     setupFormValidation() {}
