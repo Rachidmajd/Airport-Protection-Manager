@@ -969,6 +969,15 @@ showReportModal(reportData, project) {
             return new Date(dateString).toLocaleString();
         };
 
+        // Helper to get procedure code from the ID
+        const getProcedureCode = (procedureId) => {
+            if (window.mapManager && window.mapManager.procedures) {
+                const procedure = window.mapManager.procedures.find(p => p.id === procedureId);
+                return procedure ? procedure.procedure_code : `ID: ${procedureId}`;
+            }
+            return `ID: ${procedureId}`; // Fallback if mapManager is not ready
+        };
+
         // Main report template
         return `
             <div class="report-container">
@@ -1034,7 +1043,7 @@ showReportModal(reportData, project) {
                             ${conflicts.map(conflict => `
                                 <tr>
                                     <td>${conflict.id}</td>
-                                    <td>${conflict.procedure_code || 'N/A'}</td>
+                                    <td><strong>${getProcedureCode(conflict.flight_procedure_id)}</strong></td>
                                     <td><span class="badge ${conflict.type?.toLowerCase()}">${conflict.type || 'Unknown'}</span></td>
                                     <td><span class="badge severity-${conflict.severity?.toLowerCase()}">${conflict.severity || 'N/A'}</span></td>
                                     <td>${conflict.details || 'No additional details.'}</td>
