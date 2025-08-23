@@ -522,6 +522,39 @@ bool ProjectController::validateGeometry(const nlohmann::json& geometry, std::st
     return true;
 }
 
+bool ProjectController::validatePointGeometry(const nlohmann::json& geometry, std::string& error) {
+    if (geometry["type"] != "Point") {
+        error = "Expected Point geometry";
+        return false;
+    }
+    
+    if (!geometry.contains("coordinates") || !geometry["coordinates"].is_array()) {
+        error = "Point must have coordinates array";
+        return false;
+    }
+    
+    auto coords = geometry["coordinates"];
+    if (coords.size() < 2) {
+        error = "Point must have at least longitude and latitude";
+        return false;
+    }
+    
+    double lng = coords[0].get<double>();
+    double lat = coords[1].get<double>();
+    
+    if (lng < -180 || lng > 180) {
+        error = "Invalid longitude: " + std::to_string(lng);
+        return false;
+    }
+    
+    if (lat < -90 || lat > 90) {
+        error = "Invalid latitude: " + std::to_string(lat);
+        return false;
+    }
+    
+    return true;
+}
+
 bool ProjectController::saveProjectGeometry(int project_id, const nlohmann::json& geojson) {
     try {
         auto& db = DatabaseManager::getInstance();

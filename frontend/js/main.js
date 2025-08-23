@@ -2,6 +2,7 @@
 import authManager from './auth.js';
 import mapManager from './map.js';
 import apiClient from './api.js';
+import coordinateEntryManager from './coordinateEntry.js';
 import uiManager, { 
     showLoading, 
     showLoginScreen, 
@@ -70,7 +71,7 @@ async createNewProject(projectData) {
         const user = authManager.getUser();
         if (user) {
             // Add all necessary demander fields from the user object
-            projectData.demander_id = parseInt(user.id, 1);
+            projectData.demander_id = 1;
             projectData.demander_name = user.fullName;
             projectData.demander_organization = user.organization;
             projectData.demander_email = user.email;
@@ -132,6 +133,9 @@ async refreshAllData() {
             const user = authManager.getUser();
             console.log('👤 Current user:', user);
             updateUserInfo(user);
+
+            coordinateEntryManager.init();
+
             
             // Initialize map
             console.log('🗺️ Initializing map...');
@@ -159,6 +163,7 @@ async refreshAllData() {
 
             // Initialize project bar
             updateProjectBar(null);
+
             
             showNotification(`Welcome, ${user.firstName || user.username}!`, 'success');
             console.log('✅ Authenticated app initialization complete');

@@ -59,6 +59,32 @@ class MapManager {
         console.log('✅ Map initialized successfully');
     }
 
+    acceptExternalGeometry(feature, formData) {
+        // This uses the existing createDroneZone method
+        this.createDroneZone(feature, formData);
+    }
+
+    validatePolygonCoordinates(coordinates) {
+        // Check if coordinates form a valid polygon
+        if (coordinates.length < 3) {
+            return { valid: false, error: 'At least 3 points required' };
+        }
+        
+        // Check if all coordinates are valid
+        for (const coord of coordinates) {
+            if (!Array.isArray(coord) || coord.length < 2) {
+                return { valid: false, error: 'Invalid coordinate format' };
+            }
+            
+            const [lng, lat] = coord;
+            if (lng < -180 || lng > 180 || lat < -90 || lat > 90) {
+                return { valid: false, error: `Invalid coordinates: ${lng}, ${lat}` };
+            }
+        }
+        
+        return { valid: true };
+    }
+
     setupLayerDebuggging() {
         this.map.on('layeradd', (e) => {
             console.log('➕ Layer added:', e.layer.constructor.name);
@@ -83,28 +109,36 @@ class MapManager {
 
     setupDrawingControls() {
         console.log('🎨 Setting up drawing controls...');
-        
+    
         // Setup drawing event handlers
         this.map.on('draw:created', (e) => {
             console.log('✏️ Shape created:', e.layerType);
             this.handleDrawCreated(e);
         });
-
+    
         this.map.on('draw:drawstart', (e) => {
             console.log('🎯 Drawing started:', e.layerType);
             this.updateDrawingButtonText(true, e.layerType);
         });
-
+    
         this.map.on('draw:drawstop', (e) => {
             console.log('🛑 Drawing stopped:', e.layerType);
             this.updateDrawingButtonText(false);
+            // Clean up the drawer reference
+            if (this.currentDrawer) {
+                this.currentDrawer = null;
+            }
         });
-
+    
+        this.map.on('draw:drawvertex', (e) => {
+            console.log('📍 Vertex added');
+        });
+    
         this.map.on('draw:canceled', (e) => {
             console.log('❌ Drawing canceled:', e.layerType);
             this.handleDrawCanceled();
         });
-
+    
         // Setup drawing tool buttons
         this.setupDrawingButtons();
     }
@@ -114,6 +148,19 @@ class MapManager {
         
         // Store the current drawn layer
         this.currentDrawnLayer = e.layer;
+        
+        // IMPORTANT: Disable and clean up the drawer immediately
+        if (this.currentDrawer) {
+            try {
+                this.currentDrawer.disable();
+            } catch (error) {
+                console.warn('Error disabling drawer:', error);
+            }
+            this.currentDrawer = null;
+        }
+        
+        // Re-enable drawing buttons
+        this.setDrawingButtonsState(false);
         
         // Add to drawnItems immediately for visibility
         this.drawnItems.addLayer(this.currentDrawnLayer);
@@ -126,13 +173,6 @@ class MapManager {
         
         if (geometry) {
             console.log('📐 Geometry created successfully:', geometry.geometry.type);
-            
-            // Show form to input drone zone data
-            console.log('🐛 About to call showDroneZoneForm');
-            
-            // Add extra debugging
-            const modalExists = !!document.getElementById('drone-form-modal');
-            console.log('🐛 Modal exists before call:', modalExists);
             
             showDroneZoneForm(geometry, (formData) => {
                 console.log('📤 Form callback triggered with data:', formData);
@@ -150,7 +190,22 @@ class MapManager {
 
     handleDrawCanceled() {
         console.log('🧹 Cleaning up canceled draw');
+        
+        // Clean up drawer
+        if (this.currentDrawer) {
+            try {
+                this.currentDrawer.disable();
+            } catch (e) {
+                console.warn('Error disabling drawer on cancel:', e);
+            }
+            this.currentDrawer = null;
+        }
+        
+        // Clean up any temporary layer
         this.cleanupFailedDraw();
+        
+        // Reset buttons
+        this.setDrawingButtonsState(false);
         this.updateDrawingButtonText(false);
     }
 
@@ -166,6 +221,7 @@ class MapManager {
         
         const polygonBtn = document.getElementById('draw-polygon-btn');
         const circleBtn = document.getElementById('draw-circle-btn');
+        const pointBtn = document.getElementById('draw-point-btn'); // NEW
 
         if (polygonBtn) {
             polygonBtn.addEventListener('click', (e) => {
@@ -186,6 +242,16 @@ class MapManager {
         } else {
             console.warn('❌ Circle button not found');
         }
+
+        if (pointBtn) {
+            pointBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.log('🔘 Point button clicked');
+                this.startDrawing('point');
+            });
+        } else {
+            console.warn('❌ Point button not found');
+        }
     }
 
     startDrawing(type) {
@@ -194,9 +260,21 @@ class MapManager {
         // Cancel any existing drawing
         this.cancelCurrentDrawing();
         
+        // Ensure clean state
+        if (this.currentDrawer) {
+            console.warn('⚠️ Drawer still exists after cancel, forcing cleanup');
+            this.currentDrawer = null;
+        }
+        
+        // Clean up any temporary layers
+        if (this.currentDrawnLayer) {
+            this.drawnItems.removeLayer(this.currentDrawnLayer);
+            this.currentDrawnLayer = null;
+        }
+        
         // Disable buttons during drawing
         this.setDrawingButtonsState(true);
-
+    
         try {
             if (type === 'polygon') {
                 this.currentDrawer = new L.Draw.Polygon(this.map, {
@@ -225,17 +303,58 @@ class MapManager {
                         fillColor: '#3b82f6'
                     }
                 });
+            } else if (type === 'point') {  // NEW: Point drawing
+                this.currentDrawer = new L.Draw.Marker(this.map, {
+                    icon: new L.Icon({
+                        iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+                        iconSize: [25, 41],
+                        iconAnchor: [12, 41],
+                        popupAnchor: [1, -34],
+                        shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+                        shadowSize: [41, 41]
+                    })
+                });
             }
-
+    
             if (this.currentDrawer) {
                 this.currentDrawer.enable();
                 console.log(`✅ ${type} drawer enabled`);
             }
         } catch (error) {
             console.error(`❌ Failed to enable ${type} drawer:`, error);
+            this.currentDrawer = null; // Ensure it's null on error
             this.setDrawingButtonsState(false);
             alert(`Failed to start ${type} drawing. Please try again.`);
         }
+    }
+
+    resetDrawingState() {
+        console.log('🔄 Resetting drawing state');
+        
+        // Disable current drawer
+        if (this.currentDrawer) {
+            try {
+                this.currentDrawer.disable();
+            } catch (e) {
+                console.warn('Error disabling drawer:', e);
+            }
+            this.currentDrawer = null;
+        }
+        
+        // Remove temporary layer
+        if (this.currentDrawnLayer) {
+            this.drawnItems.removeLayer(this.currentDrawnLayer);
+            this.currentDrawnLayer = null;
+        }
+        
+        // Clear all drawn items if needed
+        this.drawnItems.clearLayers();
+        
+        // Reset buttons
+        this.setDrawingButtonsState(false);
+        this.updateDrawingButtonText(false);
+        
+        console.log('✅ Drawing state reset complete');
     }
 
     cancelCurrentDrawing() {
@@ -285,12 +404,28 @@ class MapManager {
         console.log('🔄 Converting layer to GeoJSON:', layer.constructor.name);
         
         try {
-            if (layer instanceof L.Polygon) {
+            if (layer instanceof L.Marker) {  // NEW: Handle markers/points
+                console.log('📍 Processing point/marker');
+                const latLng = layer.getLatLng();
+                
+                return {
+                    type: 'Feature',
+                    properties: {
+                        shapeType: 'point',
+                        isPoint: true
+                    },
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [latLng.lng, latLng.lat]
+                    }
+                };
+            }
+            else if (layer instanceof L.Polygon) {
                 console.log('📐 Processing polygon');
                 const latLngs = layer.getLatLngs()[0];
                 const coordinates = latLngs.map(ll => [ll.lng, ll.lat]);
                 coordinates.push(coordinates[0]); // Close the polygon
-
+    
                 return {
                     type: 'Feature',
                     properties: {
@@ -307,8 +442,6 @@ class MapManager {
                 const center = layer.getLatLng();
                 const radius = layer.getRadius();
                 
-                console.log(`Circle - Center: [${center.lat}, ${center.lng}], Radius: ${radius}m`);
-                
                 // Convert circle to polygon approximation
                 const points = [];
                 const numPoints = 64;
@@ -317,7 +450,6 @@ class MapManager {
                     const angle = (i * 360) / numPoints;
                     const radians = (angle * Math.PI) / 180;
                     
-                    // Calculate lat/lng offset from center
                     const latOffset = (radius / 111320) * Math.cos(radians);
                     const lngOffset = (radius / (111320 * Math.cos(center.lat * Math.PI / 180))) * Math.sin(radians);
                     
@@ -325,8 +457,8 @@ class MapManager {
                     const lng = center.lng + lngOffset;
                     points.push([lng, lat]);
                 }
-                points.push(points[0]); // Close the polygon
-
+                points.push(points[0]);
+    
                 return {
                     type: 'Feature',
                     properties: { 
@@ -343,7 +475,6 @@ class MapManager {
             }
             else {
                 console.warn('⚠️ Unknown layer type:', layer.constructor.name);
-                // Try to use Leaflet's built-in toGeoJSON if available
                 if (typeof layer.toGeoJSON === 'function') {
                     console.log('🔄 Using layer.toGeoJSON()');
                     return layer.toGeoJSON();
@@ -827,6 +958,14 @@ loadAndRenderProjectGeometries(geometryCollection) {
             console.log('🚁 Creating drone zone with data:', formData);
             console.log('📐 Using geometry:', geometry.geometry.type);
             
+            // Handle point geometries by converting to circular polygon
+            let finalGeometry = geometry;
+            if (geometry.geometry.type === 'Point') {
+                const radius = formData.pointRadius || 100; // Default 100m radius
+                finalGeometry = this.convertPointToPolygon(geometry, radius);
+                console.log('📍 Converted point to polygon with radius:', radius);
+            }
+            
             // Create the new drone zone object
             const newZone = {
                 id: 'zone_' + Date.now(),
@@ -838,29 +977,23 @@ loadAndRenderProjectGeometries(geometryCollection) {
                 startTime: formData.startTime,
                 endTime: formData.endTime,
                 status: formData.status,
-                geometry: geometry,
+                geometry: finalGeometry,
+                originalGeometry: geometry, // Store original for reference
                 createdAt: new Date().toISOString()
             };
-
-            // Add to drone zones array FIRST
+    
+            // Add to drone zones array
             this.droneZones.push(newZone);
             console.log('📝 Added to droneZones array. Total zones:', this.droneZones.length);
             
-            // Create and add the persistent layer immediately
+            // Create and add the persistent layer
             const persistentLayer = this.createDroneZoneLayer(newZone);
             if (persistentLayer) {
                 this.layers.droneZones.addLayer(persistentLayer);
                 console.log('✅ Added persistent layer to drone zones layer group');
-                
-                // Verify the layer was added
-                const layerCount = this.layers.droneZones.getLayers().length;
-                console.log('📊 Total layers in droneZones group:', layerCount);
-            } else {
-                console.error('❌ Failed to create persistent layer');
-                throw new Error('Failed to create persistent layer');
             }
             
-            // Remove the temporary drawn layer AFTER persistent layer is created
+            // Remove the temporary drawn layer
             if (this.currentDrawnLayer) {
                 console.log('🧹 Removing temporary drawn layer');
                 this.drawnItems.removeLayer(this.currentDrawnLayer);
@@ -877,7 +1010,6 @@ loadAndRenderProjectGeometries(geometryCollection) {
         } catch (error) {
             console.error('❌ Failed to create drone zone:', error);
             
-            // Clean up on failure
             if (this.currentDrawnLayer) {
                 this.drawnItems.removeLayer(this.currentDrawnLayer);
                 this.currentDrawnLayer = null;
@@ -887,54 +1019,76 @@ loadAndRenderProjectGeometries(geometryCollection) {
         }
     }
 
+    convertPointToPolygon(pointFeature, radius) {
+        const coords = pointFeature.geometry.coordinates;
+        const center = { lat: coords[1], lng: coords[0] };
+        
+        const points = [];
+        const numPoints = 32; // Less points needed for small circles
+        
+        for (let i = 0; i < numPoints; i++) {
+            const angle = (i * 360) / numPoints;
+            const radians = (angle * Math.PI) / 180;
+            
+            const latOffset = (radius / 111320) * Math.cos(radians);
+            const lngOffset = (radius / (111320 * Math.cos(center.lat * Math.PI / 180))) * Math.sin(radians);
+            
+            const lat = center.lat + latOffset;
+            const lng = center.lng + lngOffset;
+            points.push([lng, lat]);
+        }
+        points.push(points[0]); // Close the polygon
+        
+        return {
+            type: 'Feature',
+            properties: {
+                ...pointFeature.properties,
+                originalType: 'Point',
+                radius: radius,
+                center: coords
+            },
+            geometry: {
+                type: 'Polygon',
+                coordinates: [points]
+            }
+        };
+    }
+
     createDroneZoneLayer(zone) {
         try {
             console.log('🎨 Creating persistent layer for zone:', zone.operationId);
             
             const style = this.getDroneZoneStyle(zone);
             
+            // Check if this was originally a point
+            if (zone.originalGeometry && zone.originalGeometry.geometry.type === 'Point') {
+                // Add a marker at the center point as well
+                const coords = zone.originalGeometry.geometry.coordinates;
+                const marker = L.marker([coords[1], coords[0]], {
+                    icon: L.divIcon({
+                        className: 'drone-point-marker',
+                        html: `<div style="
+                            background: ${style.color};
+                            width: 12px;
+                            height: 12px;
+                            border-radius: 50%;
+                            border: 2px solid white;
+                            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                        "></div>`,
+                        iconSize: [16, 16],
+                        iconAnchor: [8, 8]
+                    })
+                });
+                
+                // Add marker to the layer group
+                this.layers.droneZones.addLayer(marker);
+            }
+            
+            // Continue with normal polygon creation
             const layer = L.geoJSON(zone.geometry, {
                 style: style,
                 onEachFeature: (feature, layerFeature) => {
-                    // Add click handler
-                    layerFeature.on('click', (e) => {
-                        console.log('🖱️ Drone zone clicked:', zone.operationId);
-                        this.selectDroneZone(zone);
-                        L.DomEvent.stopPropagation(e);//e.stopPropagation();
-                    });
-
-                    // Add hover effects
-                    layerFeature.on('mouseover', (e) => {
-                        const hoverStyle = {
-                            weight: 4, 
-                            opacity: 1, 
-                            fillOpacity: 0.6
-                        };
-                        e.target.setStyle(hoverStyle);
-                        
-                        // Show tooltip
-                        const tooltipContent = `<strong>${zone.operationId}</strong><br/>Status: ${zone.status}<br/>Alt: ${zone.altitudeRange.min}-${zone.altitudeRange.max}ft`;
-                        layerFeature.bindTooltip(tooltipContent, {
-                            permanent: false,
-                            direction: 'top',
-                            className: 'drone-zone-tooltip'
-                        }).openTooltip();
-                    });
-
-                    layerFeature.on('mouseout', (e) => {
-                        e.target.setStyle(style);
-                        layerFeature.closeTooltip();
-                    });
-
-                    // Add detailed popup
-                    const popupContent = this.createDroneZonePopup(zone);
-                    layerFeature.bindPopup(popupContent, { 
-                        maxWidth: 300,
-                        className: 'drone-zone-popup'
-                    });
-                    
-                    // Store zone reference in layer for easy access
-                    layerFeature._droneZone = zone;
+                    // ... existing event handlers ...
                 }
             });
             

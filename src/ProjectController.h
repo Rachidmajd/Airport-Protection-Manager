@@ -30,6 +30,8 @@ private:
     crow::response submitProject(int id, const crow::request& req);
     bool validateGeoJSON(const nlohmann::json& geojson, std::string& error);
     bool validateGeometry(const nlohmann::json& geometry, std::string& error);
+    bool validatePointGeometry(const nlohmann::json& geometry, std::string& error);
+
     bool saveProjectGeometry(int project_id, const nlohmann::json& geojson);
     void addProjectComment(int project_id, const std::string& comment, 
                           ProjectStatus oldStatus, ProjectStatus newStatus);

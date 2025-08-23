@@ -805,18 +805,36 @@ initializeProcedureEvents() {
         return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
     }
 
-    showDroneZoneForm(geometry, callback) {
+    showDroneZoneForm(geometry, callback, existingData = null) {
         this.currentFormCallback = callback;
         const modal = document.getElementById('drone-form-modal');
         if (!modal) return;
         
-        this.setDefaultFormTimes();
-        this.clearAllFieldErrors();
+        // Check if it's a point geometry
+        const isPoint = geometry.geometry.type === 'Point';
+        const pointRadiusGroup = document.getElementById('point-radius-group');
         
-        const timestamp = new Date().toISOString().slice(0, 16).replace(/[-:]/g, '').replace('T', '-');
-        const operationIdField = document.getElementById('operation-id');
-        if (operationIdField) {
-            operationIdField.value = `DRONE-${timestamp}`;
+        if (pointRadiusGroup) {
+            if (isPoint) {
+                pointRadiusGroup.classList.remove('hidden');
+            } else {
+                pointRadiusGroup.classList.add('hidden');
+            }
+        }
+        
+        // Set default values or existing data
+        if (existingData) {
+            // ... existing code for editing ...
+        } else {
+            this.setDefaultFormTimes();
+            this.clearAllFieldErrors();
+            
+            const timestamp = new Date().toISOString().slice(0, 16).replace(/[-:]/g, '').replace('T', '-');
+            const operationIdField = document.getElementById('operation-id');
+            if (operationIdField) {
+                const prefix = isPoint ? 'POINT' : 'DRONE';
+                operationIdField.value = `${prefix}-${timestamp}`;
+            }
         }
         
         modal.classList.remove('hidden');
@@ -841,37 +859,51 @@ initializeProcedureEvents() {
         this.clearAllFieldErrors();
         this.currentFormCallback = null;
         
-        if (window.mapManager && window.mapManager.currentDrawnLayer) {
-            window.mapManager.drawnItems.removeLayer(window.mapManager.currentDrawnLayer);
-            window.mapManager.currentDrawnLayer = null;
+        // Clean up any temporary drawn layer and reset the map manager state
+        if (window.mapManager) {
+            if (window.mapManager.currentDrawnLayer) {
+                window.mapManager.drawnItems.removeLayer(window.mapManager.currentDrawnLayer);
+                window.mapManager.currentDrawnLayer = null;
+            }
+            
+            // IMPORTANT: Ensure drawer is disabled
+            if (window.mapManager.currentDrawer) {
+                try {
+                    window.mapManager.currentDrawer.disable();
+                } catch (e) {
+                    console.warn('Error disabling drawer on form cancel:', e);
+                }
+                window.mapManager.currentDrawer = null;
+            }
+            
+            // Re-enable drawing buttons
+            window.mapManager.setDrawingButtonsState(false);
+            window.mapManager.updateDrawingButtonText(false);
         }
     }
 
     handleFormSubmit() {
         console.log('🎛️ handleFormSubmit');
-
-
-            // 1. Collect form data into an object
-            const form = document.getElementById('drone-zone-form');
-            const formData = new FormData(form);
-            const data = {
-                operationId: formData.get('operationId'),
-                altitudeMin: formData.get('altitudeMin'),
-                altitudeMax: formData.get('altitudeMax'),
-                startTime: formData.get('startTime'),
-                endTime: formData.get('endTime'),
-                status: formData.get('status')
-            };
-
-            // 2. Execute the stored callback with the data, if it exists
-            if (this.currentFormCallback) {
-                this.currentFormCallback(data);
-            }
-
-            // 3. Hide the form
-            this.hideDroneZoneForm();
-
+    
+        const form = document.getElementById('drone-zone-form');
+        const formData = new FormData(form);
+        const data = {
+            operationId: formData.get('operationId'),
+            altitudeMin: formData.get('altitudeMin'),
+            altitudeMax: formData.get('altitudeMax'),
+            startTime: formData.get('startTime'),
+            endTime: formData.get('endTime'),
+            status: formData.get('status'),
+            pointRadius: formData.get('pointRadius') // NEW: Include point radius
+        };
+    
+        if (this.currentFormCallback) {
+            this.currentFormCallback(data);
+        }
+    
+        this.hideDroneZoneForm();
     }
+    
     validateForm(formData) { return true; }
     renderProcedureControls(procedures) {
         console.log('🎛️ Rendering procedure controls for', procedures.length, 'procedures');

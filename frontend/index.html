@@ -117,6 +117,8 @@
                         <h3>Draw Drone Zone</h3>
                         <button id="draw-polygon-btn" class="tool-button"><span>📐 Polygon</span></button>
                         <button id="draw-circle-btn" class="tool-button"><span>⭕ Circle</span></button>
+                        <button id="draw-point-btn" class="tool-button"><span>📍 Point</span></button> <!-- NEW -->
+                        <button id="manual-entry-btn" class="tool-button"><span>⌨️ Enter Coordinates</span></button> <!-- NEW -->
                     </div>
                     <div id="import-tools-panel" class="drawing-tools hidden">
                         <h3>Import Data</h3>
@@ -147,6 +149,12 @@
                     <div id="project-list-container" class="project-list"></div>
                 </div>
             </div>
+        </div>
+
+        <div id="point-radius-group" class="form-group hidden">
+            <label for="point-radius">Operation Radius (meters) *</label>
+            <input type="number" id="point-radius" name="pointRadius" value="100" min="10" max="1000">
+            <small class="form-help">Defines the circular operation area around the point</small>
         </div>
 
         <!-- Project Editor Form -->
@@ -208,6 +216,91 @@
                 </form>
             </div>
         </div>
+
+
+        <!-- Add this to the modals-container section -->
+<div id="coordinate-entry-modal" class="modal hidden">
+    <div class="modal-content wide">
+        <div class="modal-header">
+            <h2>Enter Coordinates Manually</h2>
+            <button id="close-coordinate-modal" class="close-button">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="coordinate-entry-form">
+                <div class="form-group">
+                    <label for="zone-name">Zone Name *</label>
+                    <input type="text" id="zone-name" name="zoneName" required>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="geometry-type-selector">Geometry Type</label>
+                        <select id="geometry-type-selector" name="geometryType">
+                            <option value="polygon">Polygon</option>
+                            <option value="point">Point</option> <!-- NEW -->
+                            <option value="multipoint">Multiple Points</option> <!-- NEW -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="coordinate-format">Coordinate Format</label>
+                        <select id="coordinate-format" name="format">
+                            <option value="decimal">Decimal Degrees (DD)</option>
+                            <option value="dms">Degrees Minutes Seconds (DMS)</option>
+                            <option value="geojson">GeoJSON</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="coordinate-system">Coordinate System</label>
+                        <select id="coordinate-system" name="system">
+                            <option value="wgs84">WGS84</option>
+                            <option value="utm">UTM</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="coordinates-input">
+                        Coordinates *
+                        <small>Enter one coordinate per line (longitude, latitude)</small>
+                    </label>
+                    <textarea id="coordinates-input" name="coordinates" rows="10" 
+                              placeholder="Example:&#10;-73.778925, 40.639751&#10;-73.750000, 40.680000&#10;-73.700000, 40.750000" 
+                              required></textarea>
+                </div>
+
+                <div id="point-options-group" class="form-group hidden">
+                    <label for="point-operation-radius">Operation Radius (meters) *</label>
+                    <input type="number" id="point-operation-radius" name="pointRadius" value="100" min="10" max="1000">
+                    <small class="form-help">Defines the circular operation area around each point</small>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="coord-altitude-min">Min Altitude (ft AGL) *</label>
+                        <input type="number" id="coord-altitude-min" name="altitudeMin" value="0" min="0" max="400" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="coord-altitude-max">Max Altitude (ft AGL) *</label>
+                        <input type="number" id="coord-altitude-max" name="altitudeMax" value="400" min="0" max="400" required>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" id="validate-coordinates" class="button secondary">Validate & Preview</button>
+                    <button type="button" id="cancel-coordinate-entry" class="button secondary">Cancel</button>
+                    <button type="submit" class="button primary" disabled>Create Zone</button>
+                </div>
+            </form>
+            
+            <!-- Preview map -->
+            <div id="coordinate-preview-container" class="hidden">
+                <h3>Preview</h3>
+                <div id="coordinate-preview-map" style="height: 300px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
         
         <!-- Add this to your index.html in the modals-container section -->
         <div id="drone-form-modal" class="modal hidden">

@@ -731,6 +731,58 @@ body {
 .severity-medium { background-color: #ed8936; color: white; }
 .severity-low { background-color: #ecc94b; color: #333; }
 
+
+
+/* Coordinate Entry Modal Styles */
+#coordinate-entry-modal .modal-content {
+    max-width: 800px;
+}
+
+#coordinates-input {
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+#coordinate-preview-container {
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #f9fafb;
+}
+
+#coordinate-preview-map {
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+}
+
+.coordinate-format-help {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 5px;
+}
+
+.coordinate-validation-status {
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-top: 10px;
+    font-size: 13px;
+}
+
+.coordinate-validation-status.valid {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #6ee7b7;
+}
+
+.coordinate-validation-status.invalid {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+}
+
+
 /* --- Print-Specific Styles --- */
 @media print {
     body * {
@@ -755,4 +807,88 @@ body {
     .modal-header .close-button, .modal-footer {
         display: none;
     }
+
+    /* Point-specific styles */
+.drone-point-marker {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.drone-point-marker:hover {
+    transform: scale(1.2);
+}
+
+#point-radius-group,
+#point-options-group {
+    background: #f8fafc;
+    padding: 15px;
+    border-radius: 6px;
+    margin: 15px 0;
+}
+
+.form-help {
+    display: block;
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 4px;
+}
+
+/* Update button to show point state */
+#draw-point-btn.active {
+    background: #ef4444;
+}
+
+#draw-point-btn.active span::before {
+    content: '⏹️ ';
+}
+
+
+    /* Coordinate Entry Modal Styles */
+#coordinate-entry-modal .modal-content {
+    max-width: 800px;
+}
+
+#coordinates-input {
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+#coordinate-preview-container {
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #f9fafb;
+}
+
+#coordinate-preview-map {
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+}
+
+.coordinate-format-help {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 5px;
+}
+
+.coordinate-validation-status {
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-top: 10px;
+    font-size: 13px;
+}
+
+.coordinate-validation-status.valid {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #6ee7b7;
+}
+
+.coordinate-validation-status.invalid {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+}
 }
