@@ -549,7 +549,11 @@ loadAndRenderProjectGeometries(geometryCollection) {
     
     // Optional: Zoom the map to fit all loaded geometries
     if (this.layers.droneZones.getLayers().length > 0) {
-        this.map.fitBounds(this.layers.droneZones.getBounds(), { padding: [50, 50] });
+        // Create a feature group from the layers to get bounds
+        const group = L.featureGroup(this.layers.droneZones.getLayers());
+        if (group.getBounds().isValid()) {
+            this.map.fitBounds(group.getBounds(), { padding: [50, 50] });
+        }
     }
 }
 

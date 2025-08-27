@@ -1066,7 +1066,7 @@ initializeProcedureEvents() {
     }
 
     renderProjectTree() {
-        const container = document.getElementById('conflict-list');
+        const container = document.getElementById('project-tree');
         if (!container) {
             console.warn('⚠️ Conflict list container not found for project tree');
             return;

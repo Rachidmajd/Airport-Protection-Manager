@@ -298,10 +298,14 @@ setupGlobalDebugging() {
             try {
                 const geometryCollection = await apiClient.getProjectGeometries(projectId);
                 mapManager.loadAndRenderProjectGeometries(geometryCollection);
-                console.log('🌳 Calling renderProjectTree...');
-                uiManager.renderProjectTree();
+                setTimeout(() => {
+                    console.log('🌳 Calling renderProjectTree...');
+                    uiManager.renderProjectTree();
+                }, 100);
                 showNotification(`Project "${project.title}" loaded successfully.`, 'info');
             } catch (error) {
+                console.error('Failed to load project geometries.', error);
+
                 showNotification('Failed to load project geometries.', 'error');
             } finally {
                 // This is the key change:
