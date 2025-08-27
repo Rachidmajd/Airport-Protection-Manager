@@ -1005,6 +1005,10 @@ loadAndRenderProjectGeometries(geometryCollection) {
             
             console.log('✅ Drone zone created successfully:', newZone.operationId);
             
+            if (window.uiManager && window.uiManager.renderProjectTree) {
+                window.uiManager.renderProjectTree();
+            }
+
             return newZone;
             
         } catch (error) {
@@ -1442,6 +1446,10 @@ loadAndRenderProjectGeometries(geometryCollection) {
             if (this.droneZones.length < initialCount) {
                 console.log('✅ Removed from droneZones array');
                 this.renderDroneZones();
+                if (window.uiManager && window.uiManager.renderProjectTree) {
+                    console.log('🌳 Updating project tree after zone deletion...');
+                    window.uiManager.renderProjectTree();
+                }
                 console.log('✅ Drone zone deleted successfully');
             } else {
                 console.warn('⚠️ Zone not found in array:', zoneId);

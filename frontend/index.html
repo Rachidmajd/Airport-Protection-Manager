@@ -12,180 +12,7 @@
     <!-- Application CSS -->
     <link rel="stylesheet" href="style.css">
 </head>
-<script>
-    // QUICK OCR MODAL FIX - Add this to your index.html
-    (function() {
-        'use strict';
-        
-        console.log('🔧 Quick OCR Modal Fix Loading...');
-        
-        // 1. Create the modal HTML if it doesn't exist
-        function createOCRModal() {
-            if (document.getElementById('ocr-processing-modal')) {
-                console.log('OCR Modal already exists');
-                return;
-            }
-            
-            const modalHTML = `
-                <div id="ocr-processing-modal" style="
-                    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                    background: rgba(0, 0, 0, 0.7); display: none; align-items: center;
-                    justify-content: center; z-index: 10000; opacity: 0;
-                    transition: opacity 0.3s ease; backdrop-filter: blur(5px);
-                ">
-                    <div class="ocr-modal-content" style="
-                        background: white; border-radius: 16px; padding: 40px;
-                        text-align: center; max-width: 400px; width: 90%;
-                        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-                        transform: scale(0.8); transition: transform 0.3s ease;
-                    ">
-                        <div id="ocr-content"></div>
-                    </div>
-                </div>
-            `;
-            
-            document.body.insertAdjacentHTML('beforeend', modalHTML);
-            console.log('✅ OCR Modal created');
-        }
-        
-        // 2. Simple OCR Modal Manager
-        window.QuickOCRModal = {
-            modal: null, content: null,
-            
-            init() {
-                createOCRModal();
-                this.modal = document.getElementById('ocr-processing-modal');
-                this.content = document.getElementById('ocr-content');
-                
-                this.modal.addEventListener('click', (e) => {
-                    if (e.target === this.modal) this.hide();
-                });
-            },
-            
-            show() {
-                this.modal.style.display = 'flex';
-                this.modal.style.opacity = '1';
-                this.modal.querySelector('.ocr-modal-content').style.transform = 'scale(1)';
-            },
-            
-            hide() {
-                this.modal.style.opacity = '0';
-                this.modal.querySelector('.ocr-modal-content').style.transform = 'scale(0.8)';
-                setTimeout(() => this.modal.style.display = 'none', 300);
-            },
-            
-            showProcessing(message = 'Processing image with OCR...') {
-                this.content.innerHTML = `
-                    <div style="width: 80px; height: 80px; margin: 0 auto 20px; position: relative; border: 3px solid #e3f2fd; border-radius: 12px;">
-                        <div style="position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, transparent, #2196f3, transparent); animation: scan 2s linear infinite;"></div>
-                    </div>
-                    <div style="font-size: 18px; font-weight: 600; color: #333; margin-bottom: 10px;">${message}</div>
-                    <div style="font-size: 14px; color: #666; margin-bottom: 20px;">Analyzing text regions...</div>
-                    <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
-                        <span>Processing</span>
-                        <div style="display: flex; gap: 4px;">
-                            <div style="width: 8px; height: 8px; background: #2196f3; border-radius: 50%; animation: wave 1.4s linear infinite;"></div>
-                            <div style="width: 8px; height: 8px; background: #2196f3; border-radius: 50%; animation: wave 1.4s linear infinite; animation-delay: 0.2s;"></div>
-                            <div style="width: 8px; height: 8px; background: #2196f3; border-radius: 50%; animation: wave 1.4s linear infinite; animation-delay: 0.4s;"></div>
-                        </div>
-                    </div>
-                `;
-                this.show();
-            },
-            
-            showSuccess(message = 'OCR completed!', details = '') {
-                this.content.innerHTML = `
-                    <div style="width: 80px; height: 80px; margin: 0 auto 20px; position: relative;">
-                        <div style="width: 80px; height: 80px; border: 3px solid #4caf50; border-radius: 50%; animation: checkmark-circle 0.6s ease-in-out;">
-                            <div style="position: absolute; top: 50%; left: 50%; width: 30px; height: 15px; border: 3px solid #4caf50; border-top: none; border-right: none; transform: translate(-50%, -60%) rotate(-45deg) scale(0); animation: checkmark-line 0.3s ease-in-out 0.6s both;"></div>
-                        </div>
-                    </div>
-                    <div style="font-size: 18px; font-weight: 600; color: #333; margin-bottom: 10px;">${message}</div>
-                    <div style="padding: 15px; margin-top: 20px; border: 1px solid #c3e6cb; border-radius: 8px; background-color: #d4edda; color: #155724; font-size: 14px;">
-                        <strong>Success!</strong> Text recognition completed. ${details}
-                    </div>
-                    <button onclick="window.QuickOCRModal.hide()" style="background: #2196f3; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; cursor: pointer; margin-top: 20px;">Continue</button>
-                `;
-            },
-            
-            showError(message = 'OCR failed', error = '') {
-                this.content.innerHTML = `
-                    <div style="width: 80px; height: 80px; margin: 0 auto 20px; position: relative;">
-                        <div style="width: 80px; height: 80px; border: 3px solid #f44336; border-radius: 50%; animation: error-shake 0.5s ease-in-out;">
-                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
-                                <div style="position: absolute; width: 30px; height: 3px; background: #f44336; transform: rotate(45deg);"></div>
-                                <div style="position: absolute; width: 30px; height: 3px; background: #f44336; transform: rotate(-45deg);"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div style="font-size: 18px; font-weight: 600; color: #333; margin-bottom: 10px;">${message}</div>
-                    <div style="padding: 15px; margin-top: 20px; border: 1px solid #f5c6cb; border-radius: 8px; background-color: #f8d7da; color: #721c24; font-size: 14px;">
-                        <strong>Error!</strong> ${error || 'Please try again.'}
-                    </div>
-                    <button onclick="window.QuickOCRModal.hide()" style="background: #2196f3; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; cursor: pointer; margin-top: 20px;">Try Again</button>
-                `;
-            }
-        };
-        
-        // Add CSS animations
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes scan { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(74px); opacity: 0.3; } }
-            @keyframes wave { 0%, 60%, 100% { transform: scale(1); opacity: 0.5; } 30% { transform: scale(1.3); opacity: 1; } }
-            @keyframes checkmark-circle { 0% { transform: scale(0); opacity: 0; } 50% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
-            @keyframes checkmark-line { 0% { transform: translate(-50%, -60%) rotate(-45deg) scale(0); opacity: 0; } 100% { transform: translate(-50%, -60%) rotate(-45deg) scale(1); opacity: 1; } }
-            @keyframes error-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
-        `;
-        document.head.appendChild(style);
-        
-        // Hook into existing OCR button
-        function hookOCRButton() {
-            const ocrButton = document.querySelector('#run-ocr-btn');
-            if (!ocrButton) {
-                setTimeout(hookOCRButton, 1000);
-                return;
-            }
-            
-            console.log('🎯 Found OCR button, adding enhanced modal...');
-            
-            const originalHandler = ocrButton.onclick;
-            ocrButton.onclick = async function(e) {
-                console.log('🚀 Enhanced OCR clicked!');
-                window.QuickOCRModal.showProcessing('Starting OCR analysis...');
-                
-                try {
-                    if (originalHandler) await originalHandler.call(this, e);
-                    setTimeout(() => {
-                        window.QuickOCRModal.showSuccess('OCR completed!', 'Text extracted successfully.');
-                    }, 3000);
-                } catch (error) {
-                    window.QuickOCRModal.showError('OCR failed', error.message);
-                }
-            };
-            console.log('✅ OCR button enhanced');
-        }
-        
-        // Test function
-        window.testOCRModal = () => {
-            window.QuickOCRModal.showProcessing('Testing...');
-            setTimeout(() => window.QuickOCRModal.showSuccess('Test passed!'), 2000);
-        };
-        
-        // Initialize
-        function init() {
-            window.QuickOCRModal.init();
-            hookOCRButton();
-            console.log('✅ Quick OCR Modal ready! Test with: window.testOCRModal()');
-        }
-        
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', init);
-        } else {
-            init();
-        }
-    })();
-    </script>
-    
+
 <body>
 
     <!-- ===== APPLICATION SCREENS ===== -->
@@ -276,6 +103,15 @@
                 </div>
                 <div class="panel">
                     <h2 class="panel-title">
+                        Project Tree
+                        <span id="project-tree-count" class="conflict-count zero">0</span>
+                    </h2>
+                    <div id="conflict-list" class="conflict-list">
+                        <div class="no-project-tree"><p>📂 No active project</p></div>
+                    </div>
+                </div>
+                <div class="panel">
+                    <h2 class="panel-title">
                         Conflict Summary
                         <span id="conflict-count" class="conflict-count zero">0</span>
                     </h2>
@@ -283,6 +119,7 @@
                         <div class="no-conflicts"><p>✅ No conflicts detected</p></div>
                     </div>
                 </div>
+
             </aside>
             <main class="map-container">
                 <div id="map" class="map"></div>
@@ -335,91 +172,124 @@
         <div id="project-editor-modal" class="modal hidden">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h2 id="project-editor-title">Create New Project</h2>
-                    <button id="close-project-editor-btn" class="close-button">&times;</button>
+                    <h2 id="project-editor-title">📋 Create New Project</h2>
+                    <button id="close-project-editor-btn" class="close-button" aria-label="Close dialog"></button>
                 </div>
                 <form id="project-editor-form" class="modal-body">
                     <input type="hidden" id="project-id" name="id">
-                    <div class="form-group">
-                        <label for="project-title">Project Title *</label>
-                        <input type="text" id="project-title" name="title" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="project-description">Description</label>
-                        <textarea id="project-description" name="description" rows="3"></textarea>
-                    </div>
-                    <div class="form-row">
+                    
+                    <!-- Basic Information Section -->
+                    <div style="border-bottom: 1px solid #e9ecef; padding-bottom: 20px; margin-bottom: 20px;">
+                        <h5 style="color: #495057; margin-bottom: 15px; font-size: 1.1rem;">📝 Basic Information</h5>
+                        
                         <div class="form-group">
-                            <label for="project-start-date">Start Date *</label>
-                            <input type="datetime-local" id="project-start-date" name="startDate" required>
+                            <label for="project-title" class="required">Project Title</label>
+                            <input type="text" id="project-title" name="title" class="form-control" required 
+                                   placeholder="Enter descriptive project title">
                         </div>
+                        
                         <div class="form-group">
-                            <label for="project-end-date">End Date *</label>
-                            <input type="datetime-local" id="project-end-date" name="endDate" required>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="project-altitude-min">Min Altitude (ft AGL)</label>
-                            <input type="number" id="project-altitude-min" name="altitudeMin" value="0">
-                        </div>
-                        <div class="form-group">
-                            <label for="project-altitude-max">Max Altitude (ft AGL)</label>
-                            <input type="number" id="project-altitude-max" name="altitudeMax" value="400">
+                            <label for="project-description">Description</label>
+                            <textarea id="project-description" name="description" rows="3" class="form-control" 
+                                      placeholder="Detailed description of the project objectives and scope..."></textarea>
                         </div>
                     </div>
-                    <div class="form-row">
-                         <div class="form-group">
-                            <label for="project-priority">Priority</label>
-                            <select id="project-priority" name="priority">
-                                <option value="Low">Low</option>
-                                <option value="Normal" selected>Normal</option>
-                                <option value="High">High</option>
-                                <option value="Critical">Critical</option>
-                            </select>
+                    
+                    <!-- Schedule & Operations Section -->
+                    <div style="border-bottom: 1px solid #e9ecef; padding-bottom: 20px; margin-bottom: 20px;">
+                        <h5 style="color: #495057; margin-bottom: 15px; font-size: 1.1rem;">📅 Schedule & Operations</h5>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="project-start-date" class="required">Start Date & Time</label>
+                                <input type="datetime-local" id="project-start-date" name="startDate" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="project-end-date" class="required">End Date & Time</label>
+                                <input type="datetime-local" id="project-end-date" name="endDate" class="form-control" required>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="project-operation-type">Operation Type</label>
-                            <input type="text" id="project-operation-type" name="operationType">
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="project-operation-type">Operation Type</label>
+                                <input type="text" id="project-operation-type" name="operationType" class="form-control" 
+                                       placeholder="e.g., Aerial Survey, Photography, Inspection">
+                            </div>
+                            <div class="form-group">
+                                <label for="project-priority">Priority Level</label>
+                                <select id="project-priority" name="priority" class="form-control">
+                                    <option value="Low">🟢 Low Priority</option>
+                                    <option value="Normal" selected>🟡 Normal Priority</option>
+                                    <option value="High">🟠 High Priority</option>
+                                    <option value="Critical">🔴 Critical Priority</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
+                    
+                    <!-- Flight Parameters Section -->
+                    <div style="margin-bottom: 20px;">
+                        <h5 style="color: #495057; margin-bottom: 15px; font-size: 1.1rem;">✈️ Flight Parameters</h5>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="project-altitude-min">Minimum Altitude (ft AGL)</label>
+                                <input type="number" id="project-altitude-min" name="altitudeMin" value="0" 
+                                       class="form-control" min="0" max="400" step="10">
+                                <small class="form-help">Minimum operating altitude above ground level</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="project-altitude-max">Maximum Altitude (ft AGL)</label>
+                                <input type="number" id="project-altitude-max" name="altitudeMax" value="400" 
+                                       class="form-control" min="0" max="400" step="10">
+                                <small class="form-help">Maximum operating altitude (FAA limit: 400ft)</small>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="form-actions">
-                        <button type="button" id="cancel-project-editor-btn" class="button secondary">Cancel</button>
-                        <button type="submit" class="button primary">Save Project</button>
+                        <button type="button" id="cancel-project-editor-btn" class="button secondary">
+                            ❌ Cancel
+                        </button>
+                        <button type="submit" class="button primary">
+                            💾 Save Project
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
 
 
-        <!-- Add this to the modals-container section -->
         <div id="coordinate-entry-modal" class="modal hidden">
-            <div class="modal-content wide">
+            <div class="modal-content">
                 <div class="modal-header">
-                    <h2>Enter Coordinates Manually</h2>
-                    <button id="close-coordinate-modal" class="close-button">&times;</button>
+                    <h2>📍 Manual Coordinate Entry</h2>
+                    <button id="close-coordinate-modal" class="close-button" aria-label="Close dialog"></button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body" style="display: grid; grid-template-columns: 1fr 400px; gap: 30px;">
+                    <!-- Left side - Form -->
                     <form id="coordinate-entry-form">
                         <div class="form-group">
-                            <label for="zone-name">Zone Name *</label>
-                            <input type="text" id="zone-name" name="zoneName" required>
+                            <label for="zone-name" class="required">Zone Name</label>
+                            <input type="text" id="zone-name" name="zoneName" class="form-control" required
+                                   placeholder="Enter descriptive zone name">
                         </div>
                         
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="geometry-type-selector">Geometry Type</label>
-                                <select id="geometry-type-selector" name="geometryType">
-                                    <option value="polygon">Polygon</option>
-                                    <option value="circle">Circle</option>
-                                    <option value="point">Point</option>
-                                    <option value="multipoint">Multiple Points</option>
+                                <select id="geometry-type-selector" name="geometryType" class="form-control">
+                                    <option value="polygon">🔷 Polygon</option>
+                                    <option value="circle">⭕ Circle</option>
+                                    <option value="point">📍 Point</option>
+                                    <option value="multipoint">📍 Multiple Points</option>
                                 </select>
                                 <small class="form-help">Select the type of geometry to create</small>
                             </div>
                             <div class="form-group">
-                                <label for="coordinate-format">Coordinate Format</label>
-                                <select id="coordinate-format" name="format">
+                                <label for="coordinate-format">Input Format</label>
+                                <select id="coordinate-format" name="format" class="form-control">
                                     <option value="decimal">Decimal Degrees (DD)</option>
                                     <option value="dms">Degrees Minutes Seconds (DMS)</option>
                                     <option value="geojson">GeoJSON Array</option>
@@ -427,44 +297,52 @@
                             </div>
                         </div>
                         
+                        <div class="form-group">
+                            <label for="coordinates-input">
+                                Coordinates <span style="color: #dc3545;">*</span>
+                                <small style="font-weight: normal; color: #6c757d;">Format varies by geometry type selected above</small>
+                            </label>
+                            <textarea id="coordinates-input" name="coordinates" rows="8" class="form-control"
+                                      placeholder="Select geometry type and format above to see example..." required></textarea>
+                        </div>
+                        
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="coordinate-system">Coordinate System</label>
-                                <select id="coordinate-system" name="system">
-                                    <option value="wgs84">WGS84 (GPS Standard)</option>
-                                    <option value="utm">UTM (Future Support)</option>
-                                </select>
+                                <label for="coord-altitude-min" class="required">Min Altitude (ft AGL)</label>
+                                <input type="number" id="coord-altitude-min" name="altitudeMin" value="0" 
+                                       min="0" max="400" class="form-control" required>
                             </div>
-                            <div class="form-group circle-only hidden">
-                                <label for="circle-points">Circle Precision</label>
-                                <select id="circle-points" name="circlePoints">
-                                    <option value="32">Low (32 points)</option>
-                                    <option value="64" selected>Medium (64 points)</option>
-                                    <option value="128">High (128 points)</option>
-                                </select>
-                                <small class="form-help">More points = smoother circle but larger file size</small>
+                            <div class="form-group">
+                                <label for="coord-altitude-max" class="required">Max Altitude (ft AGL)</label>
+                                <input type="number" id="coord-altitude-max" name="altitudeMax" value="400" 
+                                       min="0" max="400" class="form-control" required>
                             </div>
                         </div>
                         
-                        <div class="form-group">
-                            <label for="coordinates-input">
-                                Coordinates *
-                                <small>Format varies by geometry type selected above</small>
-                            </label>
-                            <textarea id="coordinates-input" name="coordinates" rows="10" 
-                                      placeholder="Select geometry type and format above to see example..." 
-                                      required></textarea>
+                        <div class="form-actions">
+                            <button type="button" id="validate-coordinates" class="button success">
+                                🔍 Validate & Preview
+                            </button>
+                            <button type="button" id="cancel-coordinate-entry" class="button secondary">
+                                Cancel
+                            </button>
+                            <button type="submit" class="button primary" disabled>
+                                Create Zone
+                            </button>
                         </div>
-        
-                        <!-- Circle-specific information panel -->
+                    </form>
+                    
+                    <!-- Right side - Preview and help -->
+                    <div>
+                        <!-- Circle Info Panel -->
                         <div id="circle-info-panel" class="form-group circle-only hidden" style="
-                            background: #f0f9ff; 
+                            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
                             border: 1px solid #0ea5e9; 
-                            border-radius: 6px; 
+                            border-radius: 8px; 
                             padding: 15px;
-                            margin: 15px 0;
+                            margin-bottom: 20px;
                         ">
-                            <h4 style="color: #0369a1; margin-bottom: 8px;">📏 Circle Input Format</h4>
+                            <h5 style="color: #0369a1; margin-bottom: 10px;">📏 Circle Input Format</h5>
                             <div style="font-size: 13px; color: #374151;">
                                 <p><strong>Decimal:</strong> longitude, latitude, radius_meters</p>
                                 <p><strong>DMS:</strong> deg°min'sec"N/S deg°min'sec"E/W radius_meters</p>
@@ -474,35 +352,19 @@
                             </div>
                         </div>
         
-                        <!-- Point-specific options -->
+                        <!-- Point Options -->
                         <div id="point-options-group" class="form-group hidden">
-                            <label for="point-operation-radius">Operation Radius (meters) *</label>
-                            <input type="number" id="point-operation-radius" name="pointRadius" value="100" min="10" max="1000">
+                            <label for="point-operation-radius">Operation Radius (meters) <span style="color: #dc3545;">*</span></label>
+                            <input type="number" id="point-operation-radius" name="pointRadius" value="100" 
+                                   min="10" max="1000" class="form-control">
                             <small class="form-help">Defines the circular operation area around each point</small>
                         </div>
                         
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="coord-altitude-min">Min Altitude (ft AGL) *</label>
-                                <input type="number" id="coord-altitude-min" name="altitudeMin" value="0" min="0" max="400" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="coord-altitude-max">Max Altitude (ft AGL) *</label>
-                                <input type="number" id="coord-altitude-max" name="altitudeMax" value="400" min="0" max="400" required>
-                            </div>
+                        <!-- Preview Container -->
+                        <div id="coordinate-preview-container" class="hidden">
+                            <h5>🗺️ Preview</h5>
+                            <div id="coordinate-preview-map" style="height: 300px; border-radius: 8px; border: 2px solid #d1d5db;"></div>
                         </div>
-                        
-                        <div class="form-actions">
-                            <button type="button" id="validate-coordinates" class="button secondary">🔍 Validate & Preview</button>
-                            <button type="button" id="cancel-coordinate-entry" class="button secondary">Cancel</button>
-                            <button type="submit" class="button primary" disabled>Create Zone</button>
-                        </div>
-                    </form>
-                    
-                    <!-- Preview map -->
-                    <div id="coordinate-preview-container" class="hidden">
-                        <h3>Preview</h3>
-                        <div id="coordinate-preview-map" style="height: 300px; border-radius: 6px; border: 1px solid #d1d5db;"></div>
                     </div>
                 </div>
             </div>
@@ -512,59 +374,57 @@
         <div id="drone-form-modal" class="modal hidden">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h2>Create Drone Zone</h2>
-                    <button id="close-modal" class="close-button">&times;</button>
+                    <h2>🚁 Create Drone Zone</h2>
+                    <button id="close-modal" class="close-button" aria-label="Close dialog"></button>
                 </div>
-                <div class="modal-body">
-                    <form id="drone-zone-form">
+                <form id="drone-zone-form" class="modal-body">
+                    <div class="form-group">
+                        <label for="operation-id" class="required">Operation ID</label>
+                        <input type="text" id="operation-id" name="operationId" class="form-control" required>
+                        <div class="form-error" id="operation-id-error"></div>
+                    </div>
+                    
+                    <div class="form-row">
                         <div class="form-group">
-                            <label for="operation-id">Operation ID *</label>
-                            <input type="text" id="operation-id" name="operationId" required>
-                            <div class="form-error" id="operation-id-error"></div>
+                            <label for="altitude-min" class="required">Min Altitude (ft AGL)</label>
+                            <input type="number" id="altitude-min" name="altitudeMin" value="0" min="0" max="400" class="form-control" required>
+                            <div class="form-error" id="altitude-min-error"></div>
                         </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="altitude-min">Min Altitude (ft AGL) *</label>
-                                <input type="number" id="altitude-min" name="altitudeMin" value="0" min="0" max="400" required>
-                                <div class="form-error" id="altitude-min-error"></div>
-                            </div>
-                            <div class="form-group">
-                                <label for="altitude-max">Max Altitude (ft AGL) *</label>
-                                <input type="number" id="altitude-max" name="altitudeMax" value="400" min="0" max="400" required>
-                                <div class="form-error" id="altitude-max-error"></div>
-                            </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="start-time">Start Time *</label>
-                                <input type="datetime-local" id="start-time" name="startTime" required>
-                                <div class="form-error" id="start-time-error"></div>
-                            </div>
-                            <div class="form-group">
-                                <label for="end-time">End Time *</label>
-                                <input type="datetime-local" id="end-time" name="endTime" required>
-                                <div class="form-error" id="end-time-error"></div>
-                            </div>
-                        </div>
-
                         <div class="form-group">
-                            <label for="status">Status</label>
-                            <select id="status" name="status" required>
-                                <option value="Planned">Planned</option>
-                                <option value="Active">Active</option>
-                                <option value="Completed">Completed</option>
-                            </select>
-                            <div class="form-error" id="status-error"></div>
+                            <label for="altitude-max" class="required">Max Altitude (ft AGL)</label>
+                            <input type="number" id="altitude-max" name="altitudeMax" value="400" min="0" max="400" class="form-control" required>
+                            <div class="form-error" id="altitude-max-error"></div>
                         </div>
-
-                        <div class="form-actions">
-                            <button type="button" id="cancel-drone-form" class="button secondary">Cancel</button>
-                            <button type="submit" class="button primary">Create Drone Zone</button>
+                    </div>
+        
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="start-time" class="required">Start Time</label>
+                            <input type="datetime-local" id="start-time" name="startTime" class="form-control" required>
+                            <div class="form-error" id="start-time-error"></div>
                         </div>
-                    </form>
-                </div>
+                        <div class="form-group">
+                            <label for="end-time" class="required">End Time</label>
+                            <input type="datetime-local" id="end-time" name="endTime" class="form-control" required>
+                            <div class="form-error" id="end-time-error"></div>
+                        </div>
+                    </div>
+        
+                    <div class="form-group">
+                        <label for="status">Status</label>
+                        <select id="status" name="status" class="form-control" required>
+                            <option value="Planned">📋 Planned</option>
+                            <option value="Active">🟢 Active</option>
+                            <option value="Completed">✅ Completed</option>
+                        </select>
+                        <div class="form-error" id="status-error"></div>
+                    </div>
+        
+                    <div class="form-actions">
+                        <button type="button" id="cancel-drone-form" class="button secondary">Cancel</button>
+                        <button type="submit" class="button primary">🚁 Create Drone Zone</button>
+                    </div>
+                </form>
             </div>
         </div>
 

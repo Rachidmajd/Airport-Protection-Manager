@@ -1814,3 +1814,588 @@ body {
 #coordinate-entry-modal .form-help {
     color: #6b7280 !important;
 }
+
+
+/* ==========================================================================
+   Bootstrap-Style Modal Enhancements
+   ========================================================================== */
+
+/* Modal Backdrop */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1050;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(3px);
+}
+
+.modal:not(.hidden) {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Modal Content Container */
+.modal-content {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25), 
+                0 0 0 1px rgba(255, 255, 255, 0.05);
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    transform: scale(0.9) translateY(20px);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.modal:not(.hidden) .modal-content {
+    transform: scale(1) translateY(0);
+}
+
+.modal-content.wide {
+    max-width: 90vw;
+    width: 1200px;
+}
+
+/* Modal Header */
+.modal-header {
+    padding: 24px 24px 16px;
+    border-bottom: 1px solid #e9ecef;
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+}
+
+.modal-header::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 24px;
+    right: 24px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #e9ecef, transparent);
+}
+
+.modal-header h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #495057;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.modal-header h2::before {
+    content: '';
+    width: 4px;
+    height: 24px;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border-radius: 2px;
+}
+
+/* Close Button */
+.close-button {
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    line-height: 1;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.close-button:hover {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    transform: scale(1.1);
+}
+
+.close-button:active {
+    transform: scale(0.95);
+}
+
+.close-button::before,
+.close-button::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 2px;
+    background: currentColor;
+    border-radius: 1px;
+    transition: all 0.3s ease;
+}
+
+.close-button::before {
+    transform: rotate(45deg);
+}
+
+.close-button::after {
+    transform: rotate(-45deg);
+}
+
+.close-button:hover::before,
+.close-button:hover::after {
+    width: 24px;
+}
+
+/* Modal Body */
+.modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    flex-grow: 1;
+    background: #ffffff;
+}
+
+/* Modal Footer */
+.modal-footer {
+    padding: 16px 24px 24px;
+    border-top: 1px solid #e9ecef;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    position: relative;
+}
+
+.modal-footer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 24px;
+    right: 24px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #e9ecef, transparent);
+}
+
+/* Bootstrap-Style Buttons */
+.button, .btn {
+    display: inline-block;
+    font-weight: 500;
+    color: #212529;
+    text-align: center;
+    vertical-align: middle;
+    cursor: pointer;
+    background-color: transparent;
+    border: 1px solid transparent;
+    padding: 10px 20px;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    border-radius: 8px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.6s;
+}
+
+.button:hover::before {
+    left: 100%;
+}
+
+.button:disabled {
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+/* Primary Button */
+.button.primary, .btn-primary {
+    color: #fff;
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    border-color: #007bff;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.25);
+}
+
+.button.primary:hover, .btn-primary:hover {
+    background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+    border-color: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 123, 255, 0.35);
+}
+
+.button.primary:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.25);
+}
+
+/* Secondary Button */
+.button.secondary, .btn-secondary {
+    color: #495057;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-color: #ced4da;
+    box-shadow: 0 2px 8px rgba(108, 117, 125, 0.15);
+}
+
+.button.secondary:hover, .btn-secondary:hover {
+    color: #495057;
+    background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+    border-color: #adb5bd;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(108, 117, 125, 0.2);
+}
+
+/* Success Button */
+.button.success, .btn-success {
+    color: #fff;
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+    border-color: #28a745;
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.25);
+}
+
+.button.success:hover, .btn-success:hover {
+    background: linear-gradient(135deg, #1e7e34 0%, #155724 100%);
+    border-color: #1e7e34;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.35);
+}
+
+/* Danger Button */
+.button.danger, .btn-danger {
+    color: #fff;
+    background: linear-gradient(135deg, #dc3545 0%, #b21f2d 100%);
+    border-color: #dc3545;
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.25);
+}
+
+.button.danger:hover, .btn-danger:hover {
+    background: linear-gradient(135deg, #b21f2d 0%, #8b1a1a 100%);
+    border-color: #b21f2d;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(220, 53, 69, 0.35);
+}
+
+/* Form Elements Bootstrap Style */
+.form-group {
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #495057;
+    font-size: 0.9375rem;
+    position: relative;
+}
+
+.form-group label.required::after {
+    content: '*';
+    color: #dc3545;
+    margin-left: 4px;
+    font-weight: bold;
+}
+
+.form-control,
+.form-group input,
+.form-group select,
+.form-group textarea {
+    display: block;
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 0.9375rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.form-control:focus,
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    color: #495057;
+    background-color: #fff;
+    border-color: #80bdff;
+    outline: 0;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05), 
+                0 0 0 3px rgba(0, 123, 255, 0.1);
+    transform: translateY(-1px);
+}
+
+.form-control::placeholder,
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+    color: #6c757d;
+    opacity: 1;
+}
+
+/* Form Validation States */
+.form-group.has-error .form-control,
+.form-group.has-error input {
+    border-color: #dc3545;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05), 
+                0 0 0 3px rgba(220, 53, 69, 0.1);
+}
+
+.form-group.has-success .form-control,
+.form-group.has-success input {
+    border-color: #28a745;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05), 
+                0 0 0 3px rgba(40, 167, 69, 0.1);
+}
+
+.form-error {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 6px;
+    display: block;
+    animation: slideInDown 0.3s ease;
+}
+
+.form-help {
+    color: #6c757d;
+    font-size: 0.875rem;
+    margin-top: 6px;
+    display: block;
+}
+
+/* Form Row */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid #e9ecef;
+    position: relative;
+}
+
+.form-actions::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #e9ecef, transparent);
+}
+
+.form-actions .button:last-child {
+    margin-left: auto;
+}
+
+/* Specific Modal Enhancements */
+.project-list-modal .modal-content {
+    max-width: 900px;
+    width: 85%;
+}
+
+.project-editor-modal .modal-content,
+#project-editor-modal .modal-content {
+    max-width: 850px;
+    width: 80%;
+}
+
+.drone-form-modal .modal-content,
+#drone-form-modal .modal-content {
+    max-width: 750px;
+    width: 75%;
+}
+
+.coordinate-entry-modal .modal-content,
+#coordinate-entry-modal .modal-content {
+    max-width: 950px;
+    width: 85%;
+}
+
+.report-modal .modal-content {
+    max-width: 1200px;
+    width: 90%;
+}
+
+/* Image Editor Modal - Extra Wide */
+.image-editor-modal .modal-content,
+#image-editor-modal .modal-content {
+    max-width: 95vw;
+    width: 1400px;
+    max-height: 90vh;
+}
+
+.image-editor-modal .modal-body,
+#image-editor-modal .modal-body {
+    display: flex;
+    gap: 24px;
+    height: 70vh;
+    padding: 24px;
+}
+
+/* Form Row Improvements for Wider Modals */
+.form-row-triple {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+}
+
+.form-row-quad {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 16px;
+    align-items: start;
+}
+
+/* Alert Styles */
+.alert {
+    position: relative;
+    padding: 16px 20px;
+    margin-bottom: 1rem;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font-size: 0.9375rem;
+}
+
+.alert-success {
+    color: #155724;
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    border-color: #c3e6cb;
+}
+
+.alert-danger {
+    color: #721c24;
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    border-color: #f5c6cb;
+}
+
+.alert-warning {
+    color: #856404;
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    border-color: #ffeaa7;
+}
+
+.alert-info {
+    color: #0c5460;
+    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+    border-color: #bee5eb;
+}
+
+/* Loading Spinner for Modals */
+.modal .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(0, 123, 255, 0.3);
+    border-top: 3px solid #007bff;
+    margin: 20px auto;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .project-editor-modal .modal-content,
+    #project-editor-modal .modal-content,
+    .coordinate-entry-modal .modal-content,
+    #coordinate-entry-modal .modal-content {
+        width: 90%;
+    }
+    
+    .image-editor-modal .modal-content,
+    #image-editor-modal .modal-content {
+        width: 95vw;
+    }
+}
+
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95%;
+        margin: 20px;
+        max-height: calc(100vh - 40px);
+    }
+    
+    .modal-content.wide,
+    .project-editor-modal .modal-content,
+    #project-editor-modal .modal-content,
+    .drone-form-modal .modal-content,
+    #drone-form-modal .modal-content,
+    .coordinate-entry-modal .modal-content,
+    #coordinate-entry-modal .modal-content {
+        width: 95%;
+        max-width: none;
+    }
+    
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+    
+    .form-row,
+    .form-row-triple,
+    .form-row-quad {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .button {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal-content {
+        width: 100%;
+        height: 100%;
+        max-height: 100vh;
+        border-radius: 0;
+        margin: 0;
+    }
+    
+    .modal-header h2 {
+        font-size: 1.25rem;
+    }
+    
+    .close-button {
+        width: 40px;
+        height: 40px;
+    }
+}

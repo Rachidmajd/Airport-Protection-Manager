@@ -188,7 +188,7 @@ class UIManager {
             </div>
         `;
         
-        // Add event listeners
+        // Add event listeners (keeping existing functionality)
         const typeFilter = filterDiv.querySelector('#type-filter');
         typeFilter.addEventListener('change', (e) => {
             if (window.mapManager) {
@@ -561,6 +561,7 @@ class UIManager {
         const closeBtn = document.getElementById('close-project-modal-btn');
         const modal = document.getElementById('project-list-modal');
         const newProjectBtn = document.getElementById('new-project-btn'); //
+        const editProjectBtn = document.getElementById('edit-project-btn');
 
         if (openBtn) openBtn.addEventListener('click', () => this.showProjectListModal());
         if (closeBtn) closeBtn.addEventListener('click', () => this.hideProjectListModal());
@@ -573,7 +574,10 @@ class UIManager {
             if (window.aeronauticalApp) window.aeronauticalApp.closeActiveProject();
         });
         if (newProjectBtn) {
-            newProjectBtn.addEventListener('click', () => this.showProjectEditorModal());
+            newProjectBtn.addEventListener('click', () => this.showProjectCreateModal());
+        }
+        if (editProjectBtn) {
+            editProjectBtn.addEventListener('click', () => this.showEditProjectModal());
         }
     }
     
@@ -595,7 +599,7 @@ class UIManager {
         }
     }
 
-    showProjectEditorModal() {
+    showProjectCreateModal() {
         const modal = document.getElementById('project-editor-modal');
         if (modal) {
             document.getElementById('project-editor-form').reset();
@@ -604,6 +608,40 @@ class UIManager {
             modal.setAttribute('aria-hidden', 'false');
             modal.style.display = 'flex';
         }
+    }
+
+    showEditProjectModal() {
+        const modal = document.getElementById('project-editor-modal');
+        if (!modal) return;
+    
+        // Get the active project
+        const activeProject = window.aeronauticalApp?.activeProject;
+        if (!activeProject) {
+            showNotification('No active project to edit', 'warning');
+            return;
+        }
+    
+        // Pre-fill the form with current project data
+        const form = document.getElementById('project-editor-form');
+        if (form) {
+            document.getElementById('project-id').value = activeProject.id || '';
+            document.getElementById('project-title').value = activeProject.title || '';
+            document.getElementById('project-description').value = activeProject.description || '';
+            document.getElementById('project-start-date').value = activeProject.start_date || '';
+            document.getElementById('project-end-date').value = activeProject.end_date || '';
+            document.getElementById('project-altitude-min').value = activeProject.altitude_min || 0;
+            document.getElementById('project-altitude-max').value = activeProject.altitude_max || 400;
+            document.getElementById('project-priority').value = activeProject.priority || 'Normal';
+            document.getElementById('project-operation-type').value = activeProject.operation_type || '';
+        }
+    
+        // Update modal title
+        document.getElementById('project-editor-title').textContent = 'Edit Project';
+        
+        // Show the modal
+        modal.classList.remove('hidden');
+        modal.setAttribute('aria-hidden', 'false');
+        modal.style.display = 'flex';
     }
     
     hideProjectEditorModal() {
@@ -759,24 +797,31 @@ initializeProcedureEvents() {
     async handleProjectFormSubmit() {
         const form = document.getElementById('project-editor-form');
         const formData = new FormData(form);
-    
+        
+        const projectId = formData.get('id'); // Check if editing existing project
         const altitudeMin = formData.get('altitudeMin');
         const altitudeMax = formData.get('altitudeMax');
     
         const projectData = {
-            id: formData.get('id'),
+            id: projectId || undefined, // Only include ID for edits
             title: formData.get('title'),
             description: formData.get('description'),
             startDate: formData.get('startDate'),
             endDate: formData.get('endDate'),
             altitudeMin: altitudeMin ? parseInt(altitudeMin, 10) : 0,
-            altitudeMax: altitudeMax ? parseInt(altitudeMax, 10) : 400, // Default to 400 if empty
+            altitudeMax: altitudeMax ? parseInt(altitudeMax, 10) : 400,
             priority: formData.get('priority'),
             operationType: formData.get('operationType'),
         };
     
         if (window.aeronauticalApp) {
-            await window.aeronauticalApp.createNewProject(projectData);
+            if (projectId) {
+                // Edit existing project
+                await window.aeronauticalApp.updateProject(projectData);
+            } else {
+                // Create new project  
+                await window.aeronauticalApp.createNewProject(projectData);
+            }
         }
         this.hideProjectEditorModal();
     }
@@ -926,20 +971,442 @@ initializeProcedureEvents() {
             return;
         }
         
-        // Create filter controls
+        // Create filter controls (keeping existing functionality)
         const filterControls = this.createProcedureFilters(procedures);
         container.appendChild(filterControls);
         
-        // Create statistics panel
-        const statsPanel = this.createProcedureStats(procedures);
-        container.appendChild(statsPanel);
-        
-        // Create procedure list
-        const procedureList = this.createProcedureList(procedures);
+        // Create simplified procedure list (without stats)
+        const procedureList = this.createSimpleProcedureList(procedures);
         container.appendChild(procedureList);
         
         console.log('✅ Procedure controls rendered');
     }
+
+
+    createSimpleProcedureList(procedures) {
+        const listDiv = document.createElement('div');
+        listDiv.className = 'procedure-list';
+        
+        if (procedures.length === 0) {
+            listDiv.innerHTML = `
+                <div class="no-procedures" style="
+                    text-align: center; 
+                    padding: 20px; 
+                    color: #6b7280; 
+                    font-size: 12px;
+                ">
+                    No procedures available
+                </div>
+            `;
+            return listDiv;
+        }
+        
+        // Sort procedures by type, then by code
+        const sortedProcedures = [...procedures].sort((a, b) => {
+            if (a.type !== b.type) return a.type.localeCompare(b.type);
+            return a.procedure_code.localeCompare(b.procedure_code);
+        });
+        
+        const visibleCount = procedures.filter(p => p.isVisible !== false).length;
+        
+        listDiv.innerHTML = `
+            <div class="list-header" style="
+                font-weight: 600; 
+                font-size: 11px; 
+                color: #374151; 
+                margin-bottom: 8px; 
+                padding-bottom: 6px; 
+                border-bottom: 1px solid #e5e7eb;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            ">
+                <span>Flight Procedures</span>
+                <span style="
+                    background: #3b82f6; 
+                    color: white; 
+                    padding: 2px 6px; 
+                    border-radius: 10px; 
+                    font-size: 10px;
+                ">${visibleCount}/${procedures.length}</span>
+            </div>
+            <div class="list-container" style="max-height: 200px; overflow-y: auto;">
+                ${sortedProcedures.map(procedure => this.createProcedureItem(procedure)).join('')}
+            </div>
+        `;
+        
+        // Add event listeners to procedure items (keeping existing functionality)
+        listDiv.querySelectorAll('.procedure-item').forEach(item => {
+            const procedureId = item.dataset.procedureId;
+            const procedure = procedures.find(p => p.id == procedureId);
+            
+            if (procedure) {
+                // Click to focus
+                item.addEventListener('click', () => {
+                    if (window.mapManager) {
+                        window.mapManager.focusOnProcedure(procedureId);
+                    }
+                });
+                
+                // Toggle visibility
+                const toggleBtn = item.querySelector('.visibility-toggle');
+                if (toggleBtn) {
+                    toggleBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const newVisibility = !procedure.isVisible;
+                        if (window.mapManager) {
+                            window.mapManager.toggleProcedureVisibility(procedureId, newVisibility);
+                        }
+                    });
+                }
+            }
+        });
+        
+        return listDiv;
+    }
+
+    renderProjectTree() {
+        const container = document.getElementById('conflict-list');
+        if (!container) {
+            console.warn('⚠️ Conflict list container not found for project tree');
+            return;
+        }
+        
+        // Clear existing content
+        container.innerHTML = '';
+        
+        const activeProject = window.aeronauticalApp?.activeProject;
+        
+        if (!activeProject) {
+            container.innerHTML = `
+                <div class="no-project-tree" style="
+                    text-align: center; 
+                    padding: 20px; 
+                    color: #6b7280; 
+                    font-size: 12px;
+                ">
+                    📂 No active project<br>
+                    <small>Open a project to see geometry tree</small>
+                </div>
+            `;
+            return;
+        }
+        
+        // Get project geometries
+        const geometries = window.mapManager?.droneZones || [];
+        
+        // Create tree structure
+        const treeDiv = document.createElement('div');
+        treeDiv.className = 'project-tree';
+        treeDiv.style.cssText = `
+            font-size: 12px;
+            line-height: 1.4;
+        `;
+        
+        treeDiv.innerHTML = `
+            <div class="tree-header" style="
+                font-weight: 600; 
+                font-size: 11px; 
+                color: #374151; 
+                margin-bottom: 8px; 
+                padding-bottom: 6px; 
+                border-bottom: 1px solid #e5e7eb;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            ">
+                <span>Project Structure</span>
+                <span style="
+                    background: #059669; 
+                    color: white; 
+                    padding: 2px 6px; 
+                    border-radius: 10px; 
+                    font-size: 10px;
+                ">${geometries.length}</span>
+            </div>
+            
+            <div class="tree-content">
+                ${this.createProjectTreeNode(activeProject, geometries)}
+            </div>
+        `;
+        
+        container.appendChild(treeDiv);
+        
+        // Add event listeners for tree interactions
+        this.setupProjectTreeEvents(container);
+    }
+    
+    createProjectTreeNode(project, geometries) {
+        const projectIcon = this.getProjectIcon(project.status);
+        const statusColor = this.getStatusColor(project.status);
+        
+        let treeHtml = `
+            <div class="tree-node project-node" data-project-id="${project.id}" style="margin-bottom: 8px;">
+                <div class="tree-item" style="
+                    display: flex;
+                    align-items: center;
+                    padding: 8px;
+                    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+                    border: 1px solid #cbd5e1;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                " onmouseover="this.style.backgroundColor='#e2e8f0'" 
+                   onmouseout="this.style.background='linear-gradient(135deg, #f8fafc, #e2e8f0)'">
+                    
+                    <span class="tree-toggle" style="
+                        margin-right: 8px;
+                        cursor: pointer;
+                        user-select: none;
+                        width: 12px;
+                        text-align: center;
+                    ">${geometries.length > 0 ? '📁' : '📄'}</span>
+                    
+                    <span class="tree-icon" style="margin-right: 6px;">${projectIcon}</span>
+                    
+                    <div class="tree-label" style="flex-grow: 1;">
+                        <div style="font-weight: 600; color: #1e293b;">
+                            ${project.title || 'Unnamed Project'}
+                        </div>
+                        <div style="font-size: 10px; color: #64748b; margin-top: 1px;">
+                            <span style="
+                                background: ${statusColor}20;
+                                color: ${statusColor};
+                                padding: 1px 4px;
+                                border-radius: 3px;
+                                font-weight: 500;
+                            ">${project.status}</span>
+                            <span style="margin-left: 8px;">
+                                ${project.project_code || 'No Code'}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <span class="tree-count" style="
+                        background: #059669;
+                        color: white;
+                        padding: 2px 6px;
+                        border-radius: 8px;
+                        font-size: 9px;
+                        font-weight: 600;
+                    ">${geometries.length}</span>
+                </div>
+                
+                <div class="tree-children" style="
+                    margin-left: 20px;
+                    margin-top: 8px;
+                    border-left: 2px solid #e2e8f0;
+                    padding-left: 12px;
+                    display: ${geometries.length > 0 ? 'block' : 'none'};
+                ">
+                    ${geometries.map(geometry => this.createGeometryTreeNode(geometry)).join('')}
+                </div>
+            </div>
+        `;
+        
+        return treeHtml;
+    }
+    
+    createGeometryTreeNode(geometry) {
+        const geometryIcon = this.getGeometryIcon(geometry);
+        const statusColor = this.getStatusColor(geometry.status);
+        const altitudeRange = `${geometry.altitudeRange?.min || 0}-${geometry.altitudeRange?.max || 400}ft`;
+        
+        return `
+            <div class="tree-node geometry-node" data-geometry-id="${geometry.id}" style="margin-bottom: 4px;">
+                <div class="tree-item" style="
+                    display: flex;
+                    align-items: center;
+                    padding: 6px 8px;
+                    background: white;
+                    border: 1px solid #e5e7eb;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                " onmouseover="this.style.backgroundColor='#f8fafc'" 
+                   onmouseout="this.style.backgroundColor='white'">
+                    
+                    <span class="tree-icon" style="margin-right: 8px;">${geometryIcon}</span>
+                    
+                    <div class="tree-label" style="flex-grow: 1;">
+                        <div style="font-weight: 500; color: #374151; font-size: 11px;">
+                            ${geometry.operationId || 'Unnamed Zone'}
+                        </div>
+                        <div style="font-size: 9px; color: #64748b; margin-top: 1px;">
+                            <span style="
+                                background: ${statusColor}20;
+                                color: ${statusColor};
+                                padding: 1px 3px;
+                                border-radius: 2px;
+                                font-weight: 500;
+                            ">${geometry.status}</span>
+                            <span style="margin-left: 6px;">${altitudeRange}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="tree-actions" style="
+                        display: flex;
+                        gap: 4px;
+                        opacity: 0.7;
+                    ">
+                        <button class="tree-action-btn focus-btn" title="Focus on map" style="
+                            background: none;
+                            border: none;
+                            padding: 2px;
+                            cursor: pointer;
+                            border-radius: 2px;
+                            font-size: 10px;
+                        ">🎯</button>
+                        <button class="tree-action-btn edit-btn" title="Edit geometry" style="
+                            background: none;
+                            border: none;
+                            padding: 2px;
+                            cursor: pointer;
+                            border-radius: 2px;
+                            font-size: 10px;
+                        ">✏️</button>
+                        <button class="tree-action-btn delete-btn" title="Delete geometry" style="
+                            background: none;
+                            border: none;
+                            padding: 2px;
+                            cursor: pointer;
+                            border-radius: 2px;
+                            font-size: 10px;
+                            color: #dc3545;
+                        ">🗑️</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    setupProjectTreeEvents(container) {
+        // Project node clicks
+        container.addEventListener('click', (e) => {
+            if (e.target.closest('.project-node')) {
+                const projectNode = e.target.closest('.project-node');
+                const projectId = projectNode.dataset.projectId;
+                
+                // Toggle children visibility
+                if (e.target.classList.contains('tree-toggle') || e.target.closest('.tree-toggle')) {
+                    const children = projectNode.querySelector('.tree-children');
+                    const toggle = projectNode.querySelector('.tree-toggle');
+                    
+                    if (children.style.display === 'none') {
+                        children.style.display = 'block';
+                        toggle.textContent = '📁';
+                    } else {
+                        children.style.display = 'none';
+                        toggle.textContent = '📄';
+                    }
+                    return;
+                }
+                
+                // Focus on project (could zoom to project extent)
+                console.log('🎯 Focus on project:', projectId);
+                if (window.showNotification) {
+                    window.showNotification('Focused on project', 'info');
+                }
+            }
+            
+            // Geometry node clicks
+            if (e.target.closest('.geometry-node')) {
+                const geometryNode = e.target.closest('.geometry-node');
+                const geometryId = geometryNode.dataset.geometryId;
+                
+                // Handle action buttons
+                if (e.target.classList.contains('focus-btn') || e.target.closest('.focus-btn')) {
+                    this.focusOnGeometry(geometryId);
+                    return;
+                }
+                
+                if (e.target.classList.contains('edit-btn') || e.target.closest('.edit-btn')) {
+                    this.editGeometry(geometryId);
+                    return;
+                }
+                
+                if (e.target.classList.contains('delete-btn') || e.target.closest('.delete-btn')) {
+                    this.deleteGeometry(geometryId);
+                    return;
+                }
+                
+                // Default: focus on geometry
+                this.focusOnGeometry(geometryId);
+            }
+        });
+    }
+    
+    focusOnGeometry(geometryId) {
+        console.log('🎯 Focus on geometry:', geometryId);
+        const geometry = window.mapManager?.droneZones?.find(z => z.id === geometryId);
+        if (geometry && window.mapManager) {
+            window.mapManager.focusOnDroneZone(geometry);
+            if (window.showNotification) {
+                window.showNotification(`Focused on ${geometry.operationId}`, 'info');
+            }
+        }
+    }
+    
+    editGeometry(geometryId) {
+        console.log('✏️ Edit geometry:', geometryId);
+        if (window.mapManager) {
+            window.mapManager.editDroneZone(geometryId);
+        }
+    }
+    
+    deleteGeometry(geometryId) {
+        console.log('🗑️ Delete geometry:', geometryId);
+        const geometry = window.mapManager?.droneZones?.find(z => z.id === geometryId);
+        if (geometry) {
+            if (confirm(`Are you sure you want to delete "${geometry.operationId}"?`)) {
+                if (window.mapManager) {
+                    window.mapManager.deleteDroneZone(geometryId);
+                    // Refresh the tree
+                    this.renderProjectTree();
+                }
+            }
+        }
+    }
+    
+    // Helper methods for icons and colors
+    getProjectIcon(status) {
+        const icons = {
+            'Created': '📋',
+            'Pending': '⏳',
+            'Under_Review': '👁️',
+            'Approved': '✅',
+            'Rejected': '❌',
+            'Completed': '🏁'
+        };
+        return icons[status] || '📋';
+    }
+    
+    getGeometryIcon(geometry) {
+        const type = geometry.geometry?.properties?.shapeType || 'polygon';
+        const icons = {
+            'polygon': '🔷',
+            'circle': '⭕',
+            'point': '📍',
+            'multipoint': '📍'
+        };
+        return icons[type] || '🔷';
+    }
+    
+    getStatusColor(status) {
+        const colors = {
+            'Created': '#3b82f6',
+            'Pending': '#f59e0b', 
+            'Under_Review': '#8b5cf6',
+            'Approved': '#10b981',
+            'Rejected': '#ef4444',
+            'Completed': '#6b7280',
+            'Planned': '#f59e0b',
+            'Active': '#10b981'
+        };
+        return colors[status] || '#6b7280';
+    }
+
+
     updateConflictPanel(conflicts, onConflictClick) {}
 
     updateUserInfo(user) {

@@ -40,6 +40,7 @@ class OCRModalManager {
     }
 
     show() {
+        this.modal.classList.remove('hidden'); 
         this.modal.style.display = 'flex';
         setTimeout(() => this.modal.classList.add('show'), 10);
         document.body.style.overflow = 'hidden'; // Prevent background scroll
