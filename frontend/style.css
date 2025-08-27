@@ -1341,3 +1341,476 @@ body {
         height: 250px;
     }
 }
+/* ==========================================================================
+   CSS Fixes for Manual Entry Text Visibility Issues
+   ========================================================================== */
+
+/* Fix for coordinate entry modal text visibility */
+#coordinate-entry-modal input,
+#coordinate-entry-modal textarea,
+#coordinate-entry-modal select {
+    color: #374151 !important;
+    background: #ffffff !important;
+    border: 2px solid #d1d5db !important;
+}
+
+#coordinate-entry-modal input::placeholder,
+#coordinate-entry-modal textarea::placeholder {
+    color: #9ca3af !important;
+    opacity: 1 !important;
+}
+
+#coordinate-entry-modal input:focus,
+#coordinate-entry-modal textarea:focus,
+#coordinate-entry-modal select:focus {
+    color: #1f2937 !important;
+    background: #ffffff !important;
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+}
+
+/* Fix for labels and helper text */
+#coordinate-entry-modal label {
+    color: #374151 !important;
+    font-weight: 500 !important;
+}
+
+#coordinate-entry-modal .form-help {
+    color: #6b7280 !important;
+}
+
+#coordinate-entry-modal small {
+    color: #6b7280 !important;
+}
+
+/* Fix for modal content text */
+#coordinate-entry-modal .modal-body {
+    color: #374151 !important;
+}
+
+#coordinate-entry-modal h2,
+#coordinate-entry-modal h3,
+#coordinate-entry-modal h4 {
+    color: #1f2937 !important;
+}
+
+/* Fix for preview container */
+#coordinate-preview-container {
+    color: #374151 !important;
+    background: #f9fafb !important;
+}
+
+#coordinate-preview-container h3 {
+    color: #1f2937 !important;
+}
+
+/* Fix for circle info panel text */
+#circle-info-panel {
+    color: #1f2937 !important;
+}
+
+#circle-info-panel h4 {
+    color: #0369a1 !important;
+}
+
+/* Fix for validation messages */
+.validation-success {
+    color: #065f46 !important;
+    background: #d1fae5 !important;
+    border-color: #6ee7b7 !important;
+}
+
+.validation-error {
+    color: #991b1b !important;
+    background: #fee2e2 !important;
+    border-color: #fca5a5 !important;
+}
+
+/* Fix for option text in selects */
+#coordinate-entry-modal option {
+    color: #374151 !important;
+    background: #ffffff !important;
+}
+
+/* Fix for any remaining white-on-white text */
+#coordinate-entry-modal * {
+    text-shadow: none !important;
+}
+
+/* Ensure button text is visible */
+#coordinate-entry-modal button {
+    color: #ffffff !important;
+}
+
+#coordinate-entry-modal .button.secondary {
+    color: #374151 !important;
+}
+
+/* ==========================================================================
+   OCR Processing Modal Styles (Enhanced)
+   ========================================================================== */
+
+#ocr-processing-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    backdrop-filter: blur(5px);
+}
+
+#ocr-processing-modal.show {
+    opacity: 1;
+}
+
+.ocr-modal-content {
+    background: white;
+    border-radius: 16px;
+    padding: 40px;
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    transform: scale(0.8);
+    transition: transform 0.3s ease;
+}
+
+#ocr-processing-modal.show .ocr-modal-content {
+    transform: scale(1);
+}
+
+/* OCR Scanner Animation */
+.ocr-scanner {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 20px;
+    position: relative;
+    border: 3px solid #e3f2fd;
+    border-radius: 12px;
+    background: linear-gradient(45deg, #f8f9ff 25%, transparent 25%), 
+                linear-gradient(-45deg, #f8f9ff 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, #f8f9ff 75%), 
+                linear-gradient(-45deg, transparent 75%, #f8f9ff 75%);
+    background-size: 8px 8px;
+    background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
+}
+
+.ocr-scanner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #2196f3, transparent);
+    animation: scan 2s linear infinite;
+    box-shadow: 0 0 10px rgba(33, 150, 243, 0.5);
+}
+
+@keyframes scan {
+    0% { 
+        transform: translateY(0); 
+        opacity: 1; 
+    }
+    100% { 
+        transform: translateY(74px); 
+        opacity: 0.3; 
+    }
+}
+
+/* Processing dots animation */
+.ocr-text-processing {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 20px;
+    font-size: 16px;
+    color: #666;
+}
+
+.ocr-processing-dots {
+    display: flex;
+    gap: 4px;
+}
+
+.ocr-dot {
+    width: 8px;
+    height: 8px;
+    background: #2196f3;
+    border-radius: 50%;
+    animation: wave 1.4s linear infinite;
+}
+
+.ocr-dot:nth-child(1) { animation-delay: 0s; }
+.ocr-dot:nth-child(2) { animation-delay: 0.2s; }
+.ocr-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes wave {
+    0%, 60%, 100% { 
+        transform: scale(1); 
+        opacity: 0.5; 
+    }
+    30% { 
+        transform: scale(1.3); 
+        opacity: 1; 
+    }
+}
+
+/* Success animation */
+.ocr-success-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 20px;
+    position: relative;
+}
+
+.ocr-success-circle {
+    width: 80px;
+    height: 80px;
+    border: 3px solid #4caf50;
+    border-radius: 50%;
+    position: relative;
+    animation: checkmark-circle 0.6s ease-in-out;
+}
+
+.ocr-success-checkmark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 30px;
+    height: 15px;
+    border: 3px solid #4caf50;
+    border-top: none;
+    border-right: none;
+    transform: translate(-50%, -60%) rotate(-45deg) scale(0);
+    animation: checkmark-line 0.3s ease-in-out 0.6s both;
+}
+
+@keyframes checkmark-circle {
+    0% { 
+        transform: scale(0);
+        opacity: 0;
+    }
+    50% { 
+        transform: scale(1.1);
+        opacity: 1;
+    }
+    100% { 
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes checkmark-line {
+    0% {
+        transform: translate(-50%, -60%) rotate(-45deg) scale(0);
+        opacity: 0;
+    }
+    100% {
+        transform: translate(-50%, -60%) rotate(-45deg) scale(1);
+        opacity: 1;
+    }
+}
+
+/* Error animation */
+.ocr-error-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 20px;
+    position: relative;
+}
+
+.ocr-error-circle {
+    width: 80px;
+    height: 80px;
+    border: 3px solid #f44336;
+    border-radius: 50%;
+    position: relative;
+    animation: error-shake 0.5s ease-in-out;
+}
+
+.ocr-error-x {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.ocr-error-x::before,
+.ocr-error-x::after {
+    content: '';
+    position: absolute;
+    width: 30px;
+    height: 3px;
+    background: #f44336;
+    border-radius: 2px;
+}
+
+.ocr-error-x::before {
+    transform: rotate(45deg);
+}
+
+.ocr-error-x::after {
+    transform: rotate(-45deg);
+}
+
+@keyframes error-shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
+}
+
+/* Bootstrap-style alerts */
+.ocr-alert {
+    padding: 15px;
+    margin-top: 20px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font-size: 14px;
+    animation: slideInDown 0.3s ease;
+}
+
+.ocr-alert-success {
+    color: #155724;
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+}
+
+.ocr-alert-error {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+}
+
+.ocr-alert-info {
+    color: #0c5460;
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+}
+
+.ocr-alert-warning {
+    color: #856404;
+    background-color: #fff3cd;
+    border-color: #ffeaa7;
+}
+
+@keyframes slideInDown {
+    0% {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Status text styling */
+.ocr-status-text {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.ocr-progress-text {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+/* Close button */
+.ocr-close-btn {
+    background: #2196f3;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: all 0.3s ease;
+}
+
+.ocr-close-btn:hover {
+    background: #1976d2;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+}
+
+.ocr-close-btn:active {
+    transform: translateY(0);
+}
+
+/* Progress bar for longer operations */
+.ocr-progress-bar {
+    width: 100%;
+    height: 4px;
+    background: #e0e0e0;
+    border-radius: 2px;
+    overflow: hidden;
+    margin: 20px 0;
+}
+
+.ocr-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #2196f3, #64b5f6);
+    animation: progress-fill 3s ease-in-out infinite;
+}
+
+@keyframes progress-fill {
+    0% { width: 0%; }
+    50% { width: 70%; }
+    100% { width: 100%; }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 480px) {
+    .ocr-modal-content {
+        padding: 30px 20px;
+        margin: 20px;
+    }
+    
+    .ocr-scanner {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .ocr-status-text {
+        font-size: 16px;
+    }
+    
+    .ocr-progress-text {
+        font-size: 13px;
+    }
+}
+
+/* Fix for coordinate entry modal text visibility */
+#coordinate-entry-modal input,
+#coordinate-entry-modal textarea,
+#coordinate-entry-modal select {
+    color: #374151 !important;
+    background: #ffffff !important;
+}
+
+#coordinate-entry-modal input::placeholder,
+#coordinate-entry-modal textarea::placeholder {
+    color: #9ca3af !important;
+}
+
+#coordinate-entry-modal label {
+    color: #374151 !important;
+}
+
+#coordinate-entry-modal .form-help {
+    color: #6b7280 !important;
+}
