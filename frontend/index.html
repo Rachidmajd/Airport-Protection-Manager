@@ -219,87 +219,120 @@
 
 
         <!-- Add this to the modals-container section -->
-<div id="coordinate-entry-modal" class="modal hidden">
-    <div class="modal-content wide">
-        <div class="modal-header">
-            <h2>Enter Coordinates Manually</h2>
-            <button id="close-coordinate-modal" class="close-button">&times;</button>
-        </div>
-        <div class="modal-body">
-            <form id="coordinate-entry-form">
-                <div class="form-group">
-                    <label for="zone-name">Zone Name *</label>
-                    <input type="text" id="zone-name" name="zoneName" required>
+        <div id="coordinate-entry-modal" class="modal hidden">
+            <div class="modal-content wide">
+                <div class="modal-header">
+                    <h2>Enter Coordinates Manually</h2>
+                    <button id="close-coordinate-modal" class="close-button">&times;</button>
                 </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="geometry-type-selector">Geometry Type</label>
-                        <select id="geometry-type-selector" name="geometryType">
-                            <option value="polygon">Polygon</option>
-                            <option value="point">Point</option> <!-- NEW -->
-                            <option value="multipoint">Multiple Points</option> <!-- NEW -->
-                        </select>
+                <div class="modal-body">
+                    <form id="coordinate-entry-form">
+                        <div class="form-group">
+                            <label for="zone-name">Zone Name *</label>
+                            <input type="text" id="zone-name" name="zoneName" required>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="geometry-type-selector">Geometry Type</label>
+                                <select id="geometry-type-selector" name="geometryType">
+                                    <option value="polygon">Polygon</option>
+                                    <option value="circle">Circle</option>
+                                    <option value="point">Point</option>
+                                    <option value="multipoint">Multiple Points</option>
+                                </select>
+                                <small class="form-help">Select the type of geometry to create</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="coordinate-format">Coordinate Format</label>
+                                <select id="coordinate-format" name="format">
+                                    <option value="decimal">Decimal Degrees (DD)</option>
+                                    <option value="dms">Degrees Minutes Seconds (DMS)</option>
+                                    <option value="geojson">GeoJSON Array</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="coordinate-system">Coordinate System</label>
+                                <select id="coordinate-system" name="system">
+                                    <option value="wgs84">WGS84 (GPS Standard)</option>
+                                    <option value="utm">UTM (Future Support)</option>
+                                </select>
+                            </div>
+                            <div class="form-group circle-only hidden">
+                                <label for="circle-points">Circle Precision</label>
+                                <select id="circle-points" name="circlePoints">
+                                    <option value="32">Low (32 points)</option>
+                                    <option value="64" selected>Medium (64 points)</option>
+                                    <option value="128">High (128 points)</option>
+                                </select>
+                                <small class="form-help">More points = smoother circle but larger file size</small>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="coordinates-input">
+                                Coordinates *
+                                <small>Format varies by geometry type selected above</small>
+                            </label>
+                            <textarea id="coordinates-input" name="coordinates" rows="10" 
+                                      placeholder="Select geometry type and format above to see example..." 
+                                      required></textarea>
+                        </div>
+        
+                        <!-- Circle-specific information panel -->
+                        <div id="circle-info-panel" class="form-group circle-only hidden" style="
+                            background: #f0f9ff; 
+                            border: 1px solid #0ea5e9; 
+                            border-radius: 6px; 
+                            padding: 15px;
+                            margin: 15px 0;
+                        ">
+                            <h4 style="color: #0369a1; margin-bottom: 8px;">📏 Circle Input Format</h4>
+                            <div style="font-size: 13px; color: #374151;">
+                                <p><strong>Decimal:</strong> longitude, latitude, radius_meters</p>
+                                <p><strong>DMS:</strong> deg°min'sec"N/S deg°min'sec"E/W radius_meters</p>
+                                <p><strong>GeoJSON:</strong> [longitude, latitude, radius_meters]</p>
+                                <hr style="margin: 10px 0; border: none; border-top: 1px solid #cbd5e1;">
+                                <p style="margin: 0;"><strong>Radius limits:</strong> 1m to 50,000m (50km)</p>
+                            </div>
+                        </div>
+        
+                        <!-- Point-specific options -->
+                        <div id="point-options-group" class="form-group hidden">
+                            <label for="point-operation-radius">Operation Radius (meters) *</label>
+                            <input type="number" id="point-operation-radius" name="pointRadius" value="100" min="10" max="1000">
+                            <small class="form-help">Defines the circular operation area around each point</small>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="coord-altitude-min">Min Altitude (ft AGL) *</label>
+                                <input type="number" id="coord-altitude-min" name="altitudeMin" value="0" min="0" max="400" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="coord-altitude-max">Max Altitude (ft AGL) *</label>
+                                <input type="number" id="coord-altitude-max" name="altitudeMax" value="400" min="0" max="400" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" id="validate-coordinates" class="button secondary">🔍 Validate & Preview</button>
+                            <button type="button" id="cancel-coordinate-entry" class="button secondary">Cancel</button>
+                            <button type="submit" class="button primary" disabled>Create Zone</button>
+                        </div>
+                    </form>
+                    
+                    <!-- Preview map -->
+                    <div id="coordinate-preview-container" class="hidden">
+                        <h3>Preview</h3>
+                        <div id="coordinate-preview-map" style="height: 300px; border-radius: 6px; border: 1px solid #d1d5db;"></div>
                     </div>
-                    <div class="form-group">
-                        <label for="coordinate-format">Coordinate Format</label>
-                        <select id="coordinate-format" name="format">
-                            <option value="decimal">Decimal Degrees (DD)</option>
-                            <option value="dms">Degrees Minutes Seconds (DMS)</option>
-                            <option value="geojson">GeoJSON</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="coordinate-system">Coordinate System</label>
-                        <select id="coordinate-system" name="system">
-                            <option value="wgs84">WGS84</option>
-                            <option value="utm">UTM</option>
-                        </select>
-                    </div>
                 </div>
-                
-                <div class="form-group">
-                    <label for="coordinates-input">
-                        Coordinates *
-                        <small>Enter one coordinate per line (longitude, latitude)</small>
-                    </label>
-                    <textarea id="coordinates-input" name="coordinates" rows="10" 
-                              placeholder="Example:&#10;-73.778925, 40.639751&#10;-73.750000, 40.680000&#10;-73.700000, 40.750000" 
-                              required></textarea>
-                </div>
-
-                <div id="point-options-group" class="form-group hidden">
-                    <label for="point-operation-radius">Operation Radius (meters) *</label>
-                    <input type="number" id="point-operation-radius" name="pointRadius" value="100" min="10" max="1000">
-                    <small class="form-help">Defines the circular operation area around each point</small>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="coord-altitude-min">Min Altitude (ft AGL) *</label>
-                        <input type="number" id="coord-altitude-min" name="altitudeMin" value="0" min="0" max="400" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="coord-altitude-max">Max Altitude (ft AGL) *</label>
-                        <input type="number" id="coord-altitude-max" name="altitudeMax" value="400" min="0" max="400" required>
-                    </div>
-                </div>
-                
-                <div class="form-actions">
-                    <button type="button" id="validate-coordinates" class="button secondary">Validate & Preview</button>
-                    <button type="button" id="cancel-coordinate-entry" class="button secondary">Cancel</button>
-                    <button type="submit" class="button primary" disabled>Create Zone</button>
-                </div>
-            </form>
-            
-            <!-- Preview map -->
-            <div id="coordinate-preview-container" class="hidden">
-                <h3>Preview</h3>
-                <div id="coordinate-preview-map" style="height: 300px;"></div>
             </div>
         </div>
-    </div>
-</div>
 
         
         <!-- Add this to your index.html in the modals-container section -->

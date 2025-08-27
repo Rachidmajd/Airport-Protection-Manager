@@ -892,3 +892,452 @@ body {
     border: 1px solid #fca5a5;
 }
 }
+
+/* Additional CSS for circle coordinate entry features */
+
+/* Circle-specific form elements */
+.circle-only {
+    transition: all 0.3s ease-in-out;
+    opacity: 1;
+}
+
+.circle-only.hidden {
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+}
+
+/* Circle info panel styling */
+#circle-info-panel {
+    background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+    border: 1px solid #0ea5e9;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 15px 0;
+    box-shadow: 0 2px 8px rgba(14, 165, 233, 0.15);
+}
+
+#circle-info-panel h4 {
+    color: #0369a1;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Enhanced coordinate input */
+#coordinates-input {
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    resize: vertical;
+    min-height: 120px;
+    background: #fafafa;
+    border: 2px solid #d1d5db;
+    transition: all 0.3s ease;
+}
+
+#coordinates-input:focus {
+    background: white;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+#coordinates-input.circle-mode {
+    background: linear-gradient(135deg, #f0f9ff, #fafbff);
+    border-color: #0ea5e9;
+}
+
+/* Validation message styles */
+.validation-success {
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    color: #065f46;
+    border: 1px solid #6ee7b7;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-top: 12px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: slideInFromTop 0.3s ease-out;
+}
+
+.validation-error {
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-top: 12px;
+    font-size: 13px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: slideInFromTop 0.3s ease-out;
+}
+
+/* Circle center marker styling */
+.circle-center-marker {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.circle-center-marker:hover {
+    transform: scale(1.3);
+}
+
+/* Circle info display in preview */
+.circle-info {
+    background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+    border: 1px solid #0ea5e9;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    font-size: 13px;
+    box-shadow: 0 2px 4px rgba(14, 165, 233, 0.1);
+    animation: slideInFromTop 0.3s ease-out;
+}
+
+/* Enhanced button states */
+#validate-coordinates {
+    background: linear-gradient(135deg, #059669, #047857);
+    color: white;
+    border: none;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+#validate-coordinates:hover {
+    background: linear-gradient(135deg, #047857, #065f46);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+}
+
+#validate-coordinates:active {
+    transform: translateY(0);
+}
+
+#validate-coordinates::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+#validate-coordinates:hover::before {
+    left: 100%;
+}
+
+/* Geometry type selector styling */
+#geometry-type-selector {
+    background: white;
+    border: 2px solid #d1d5db;
+    transition: all 0.3s ease;
+}
+
+#geometry-type-selector:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Circle precision selector */
+#circle-points {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    color: #374151;
+    font-size: 13px;
+}
+
+/* Format help text */
+.form-help {
+    display: block;
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 4px;
+    font-style: italic;
+}
+
+/* Preview container enhancements */
+#coordinate-preview-container {
+    background: linear-gradient(135deg, #f9fafb, #f3f4f6);
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    animation: slideInFromBottom 0.3s ease-out;
+}
+
+#coordinate-preview-container h3 {
+    margin: 0 0 15px 0;
+    color: #374151;
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#coordinate-preview-container h3::before {
+    content: '🗺️';
+    font-size: 18px;
+}
+
+/* Map preview styling */
+#coordinate-preview-map {
+    border-radius: 8px;
+    border: 2px solid #d1d5db;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+/* Coordinate format grid */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    align-items: end;
+}
+
+/* Input field enhancements */
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    transform: translateY(-1px);
+}
+
+/* Submit button enhanced states */
+#coordinate-entry-form button[type="submit"]:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+#coordinate-entry-form button[type="submit"]:not(:disabled) {
+    background: linear-gradient(135deg, #059669, #047857);
+    transition: all 0.3s ease;
+}
+
+#coordinate-entry-form button[type="submit"]:not(:disabled):hover {
+    background: linear-gradient(135deg, #047857, #065f46);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+}
+
+/* Animations */
+@keyframes slideInFromTop {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInFromBottom {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+/* Loading states */
+.validating {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Responsive design for coordinate entry */
+@media (max-width: 768px) {
+    #coordinate-entry-modal .modal-content.wide {
+        width: 95vw;
+        height: 95vh;
+        max-width: none;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    #coordinate-preview-map {
+        height: 200px;
+    }
+    
+    .circle-info {
+        font-size: 12px;
+        padding: 12px;
+    }
+    
+    #coordinates-input {
+        font-size: 12px;
+        min-height: 100px;
+    }
+}
+
+@media (max-width: 480px) {
+    #coordinate-entry-modal .modal-content.wide {
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+    }
+    
+    .modal-header {
+        padding: 15px;
+    }
+    
+    .modal-body {
+        padding: 15px;
+    }
+    
+    #coordinate-preview-container {
+        margin-top: 15px;
+        padding: 15px;
+    }
+}
+
+/* Dark mode support (if needed) */
+@media (prefers-color-scheme: dark) {
+    #circle-info-panel {
+        background: linear-gradient(135deg, #1e293b, #334155);
+        border-color: #0ea5e9;
+        color: #e2e8f0;
+    }
+    
+    #coordinates-input {
+        background: #1f2937;
+        border-color: #374151;
+        color: #f9fafb;
+    }
+    
+    .validation-success {
+        background: linear-gradient(135deg, #064e3b, #065f46);
+        color: #a7f3d0;
+        border-color: #059669;
+    }
+    
+    .validation-error {
+        background: linear-gradient(135deg, #7f1d1d, #991b1b);
+        color: #fca5a5;
+        border-color: #dc2626;
+    }
+}
+
+
+/* Circle-specific styles */
+.circle-only {
+    transition: all 0.3s ease;
+}
+
+.circle-center-marker {
+    cursor: pointer;
+}
+
+.circle-info {
+    animation: slideIn 0.3s ease-out;
+}
+
+/* Enhanced coordinate input styles */
+#coordinates-input {
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    resize: vertical;
+}
+
+/* Format-specific styling */
+.coordinate-format-help {
+    background: #f8fafc;
+    border-left: 3px solid #3b82f6;
+    padding: 8px 12px;
+    margin: 10px 0;
+    font-size: 12px;
+    border-radius: 0 4px 4px 0;
+}
+
+/* Validation status indicators */
+.validation-success {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #6ee7b7;
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-top: 10px;
+}
+
+.validation-error {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-top: 10px;
+}
+
+/* Preview enhancements */
+#coordinate-preview-container {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 20px;
+}
+
+#coordinate-preview-container h3 {
+    margin: 0 0 15px 0;
+    color: #374151;
+    font-size: 16px;
+}
+
+/* Button enhancements */
+#validate-coordinates {
+    background: #059669;
+    color: white;
+}
+
+#validate-coordinates:hover {
+    background: #047857;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .modal-content.wide {
+        width: 95%;
+        max-width: none;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    #coordinate-preview-map {
+        height: 250px;
+    }
+}

@@ -397,35 +397,48 @@ bool ProjectController::saveOrUpdateProjectGeometryCollection(int project_id, co
         auto& db = DatabaseManager::getInstance();
         nlohmann::json final_collection;
 
-        // 1. Check if a geometry collection already exists for this project
-        std::string select_query = "SELECT geometry_data FROM project_geometries WHERE project_id = " + std::to_string(project_id) + " AND is_primary = 1";
+        // 1. First, DELETE existing primary geometry for this project
+        // This ensures we only have ONE primary geometry collection
+        std::string delete_query = "DELETE FROM project_geometries WHERE project_id = " + 
+                                  std::to_string(project_id) + " AND is_primary = 1";
+        db.executeQuery(delete_query);
+        logger_->debug("Deleted existing primary geometry for project {}", project_id);
+
+        // 2. Check if there was a previous collection to merge with
+        // (Optional: if you want to preserve non-primary geometries)
+        std::string select_query = "SELECT geometry_data FROM project_geometries WHERE project_id = " + 
+                                   std::to_string(project_id) + " ORDER BY created_at DESC LIMIT 1";
         MYSQL_RES* result = db.executeSelectQuery(select_query);
         
         if (result && mysql_num_rows(result) > 0) {
             MYSQL_ROW row = mysql_fetch_row(result);
             if (row && row[0]) {
                 // An existing collection was found, parse it
-                final_collection = nlohmann::json::parse(row[0]);
-                logger_->debug("Found existing geometry collection for project {}. Merging.", project_id);
+                try {
+                    final_collection = nlohmann::json::parse(row[0]);
+                    logger_->debug("Found existing geometry collection for project {}. Merging.", project_id);
+                } catch (...) {
+                    // If parsing fails, start fresh
+                    final_collection = nlohmann::json::object();
+                }
             }
             mysql_free_result(result);
         }
 
-        // 2. Merge new features into the collection
+        // 3. Ensure we have a valid FeatureCollection structure
         if (!final_collection.contains("type") || final_collection["type"] != "FeatureCollection") {
-            // If no existing collection, create a new one
             final_collection = nlohmann::json::object({
                 {"type", "FeatureCollection"},
                 {"features", nlohmann::json::array()}
             });
         }
 
-        // Add all new features from the incoming request
+        // 4. Add all new features from the incoming request
         for (const auto& feature : incoming_geojson["features"]) {
             final_collection["features"].push_back(feature);
         }
         
-        // 3. Prepare the data for an UPSERT operation
+        // 5. Prepare the data for INSERT (not UPSERT)
         std::string geo_json_string = final_collection.dump();
         std::string escaped_json = geo_json_string;
         
@@ -436,22 +449,27 @@ bool ProjectController::saveOrUpdateProjectGeometryCollection(int project_id, co
             pos += 2;
         }
 
-        std::string project_name = "Aggregated Project Geometry"; // Default name
+        std::string project_name = "Aggregated Project Geometry";
         
-        // 4. Execute the UPSERT query
+        // 6. Execute a simple INSERT query
         std::stringstream query;
-        query << "INSERT INTO project_geometries (project_id, name, geometry_data, is_primary, geometry_type) "
-              << "VALUES (" << project_id << ", '" << project_name << "', '" << escaped_json << "', 1, 'collection') "
-              << "ON DUPLICATE KEY UPDATE "
-              << "geometry_data = VALUES(geometry_data), "
-              << "updated_at = NOW()";
+        query << "INSERT INTO project_geometries "
+              << "(project_id, name, geometry_data, is_primary, geometry_type, created_at, updated_at) "
+              << "VALUES (" 
+              << project_id << ", "
+              << "'" << project_name << "', "
+              << "'" << escaped_json << "', "
+              << "1, "
+              << "'collection', "
+              << "NOW(), NOW())";
 
         if (!db.executeQuery(query.str())) {
-            logger_->error("Failed to upsert geometry collection for project {}", project_id);
+            logger_->error("Failed to insert geometry collection for project {}", project_id);
             return false;
         }
 
-        logger_->info("Successfully saved/updated geometry collection for project {}", project_id);
+        logger_->info("Successfully saved/updated geometry collection for project {} with {} features", 
+                     project_id, final_collection["features"].size());
         return true;
 
     } catch (const std::exception& e) {
@@ -459,7 +477,6 @@ bool ProjectController::saveOrUpdateProjectGeometryCollection(int project_id, co
         return false;
     }
 }
-
 
 bool ProjectController::validateGeoJSON(const nlohmann::json& geojson, std::string& error) {
     // Basic GeoJSON validation
