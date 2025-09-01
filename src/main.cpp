@@ -7,6 +7,7 @@
 #include "DatabaseManager.h"
 #include "ProjectController.h"
 #include "FlightProcedureController.h"
+#include "AirportController.h"
 
 void setupLogger() {
     // Console sink
@@ -112,7 +113,11 @@ int main(int argc, char* argv[]) {
         // Register the new ConflictController routes
         aeronautical::ConflictController::getInstance().registerRoutes(app);
         logger->info("Conflict controller registered");
-        // --- MODIFICATION END ---
+
+        aeronautical::AirportController airportController;
+        airportController.registerRoutes(app);
+        logger->info("Airport controller registered");
+
         
         // TODO: Add more controllers as needed
         // aeronautical::GeometryController geometryController;
