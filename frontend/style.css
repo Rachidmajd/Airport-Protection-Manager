@@ -2399,3 +2399,604 @@ body {
         height: 40px;
     }
 }
+
+
+/* ==========================================================================
+   Airport Display Styles
+   ========================================================================== */
+
+/* Airport Icons */
+.airport-icon {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.airport-icon:hover {
+    transform: scale(1.2);
+}
+
+/* Airport Tooltips */
+.airport-tooltip {
+    background: rgba(30, 64, 175, 0.95);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    font-size: 12px;
+    padding: 8px 12px;
+}
+
+.airport-tooltip .leaflet-tooltip-left::before {
+    border-left-color: rgba(30, 64, 175, 0.95);
+}
+
+.airport-tooltip .leaflet-tooltip-right::before {
+    border-right-color: rgba(30, 64, 175, 0.95);
+}
+
+.airport-tooltip .leaflet-tooltip-top::before {
+    border-top-color: rgba(30, 64, 175, 0.95);
+}
+
+.airport-tooltip .leaflet-tooltip-bottom::before {
+    border-bottom-color: rgba(30, 64, 175, 0.95);
+}
+
+/* Airport Popups */
+.airport-popup .leaflet-popup-content-wrapper {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+.airport-popup .leaflet-popup-content {
+    margin: 0;
+    line-height: 1.4;
+}
+
+.airport-popup .leaflet-popup-tip {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+}
+
+/* Runway Styles */
+.runway-label-marker {
+    background: transparent !important;
+    border: none !important;
+}
+
+.runway-popup .leaflet-popup-content-wrapper {
+    background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+    color: white;
+    border-radius: 8px;
+}
+
+.runway-popup .leaflet-popup-tip {
+    background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+}
+
+/* Airport Search Styles */
+.airport-search-container input:focus {
+    border-color: #1e40af;
+    box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+}
+
+.airport-search-result {
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.airport-search-result:hover {
+    background: #f8fafc !important;
+    transform: translateX(2px);
+}
+
+.airport-search-result:last-child {
+    border-bottom: none;
+}
+
+/* Airport Control Panel */
+.airport-controls {
+    overflow-y: auto;
+    max-height: 400px;
+}
+
+.airport-item {
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.airport-item:hover {
+    background: #f8fafc !important;
+    border-color: #3b82f6 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+.airport-item.selected {
+    background: #dbeafe !important;
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Airport Type Colors */
+.airport-type.large-airport {
+    background: rgba(30, 64, 175, 0.1);
+    color: #1e40af;
+}
+
+.airport-type.medium-airport {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.airport-type.small-airport {
+    background: rgba(96, 165, 250, 0.1);
+    color: #60a5fa;
+}
+
+.airport-type.heliport {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+}
+
+/* Airport Statistics */
+.airport-stats .stat-item {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+}
+
+.airport-stats .stat-item:hover {
+    background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+    transform: translateY(-1px);
+}
+
+.airport-stats .type-breakdown {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border: 1px solid #e2e8f0;
+}
+
+/* Airport Filter Controls */
+.airport-filters select:focus {
+    border-color: #1e40af;
+    box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+}
+
+.airport-filters button {
+    transition: all 0.2s ease;
+}
+
+.airport-filters button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Data Source Indicator for Airports */
+.airport-filters .data-source-indicator {
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Airport List Enhancements */
+.airport-list .list-header {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.airport-list .list-container {
+    padding-right: 4px; /* Account for scrollbar */
+}
+
+.airport-list .list-container::-webkit-scrollbar {
+    width: 4px;
+}
+
+.airport-list .list-container::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 2px;
+}
+
+.airport-list .list-container::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 2px;
+}
+
+.airport-list .list-container::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Airport Action Buttons */
+.airport-actions button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    opacity: 0.7;
+}
+
+.airport-actions button:hover {
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.05);
+    transform: scale(1.1);
+}
+
+.show-runways-btn:hover {
+    background: rgba(5, 150, 105, 0.1);
+    color: #047857;
+}
+
+.visibility-toggle:hover {
+    background: rgba(59, 130, 246, 0.1);
+}
+
+/* Airport Highlight Effects */
+.airport-highlight {
+    animation: pulse-highlight 2s ease-in-out infinite;
+}
+
+@keyframes pulse-highlight {
+    0%, 100% { 
+        opacity: 0.8; 
+        transform: scale(1); 
+    }
+    50% { 
+        opacity: 1; 
+        transform: scale(1.05); 
+    }
+}
+
+/* Runway Display */
+.runway-line {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.runway-line:hover {
+    opacity: 1 !important;
+    filter: brightness(1.2);
+}
+
+/* Airport Panel Count Badge */
+#airport-count {
+    background: #1e40af;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    min-width: 20px;
+    text-align: center;
+}
+
+#airport-count.zero {
+    background: #6b7280;
+}
+
+/* Airport Search Results Animation */
+#airport-search-results {
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+        max-height: 0;
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+        max-height: 150px;
+    }
+}
+
+/* Airport Info Cards */
+.airport-info-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.airport-info-card:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.1);
+    transform: translateY(-2px);
+}
+
+.airport-info-card .airport-code {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1e40af;
+    margin-bottom: 4px;
+}
+
+.airport-info-card .airport-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 8px;
+}
+
+.airport-info-card .airport-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 12px;
+}
+
+.airport-info-card .airport-features {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.airport-feature-tag {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 500;
+}
+
+.airport-feature-tag.inactive {
+    background: rgba(107, 114, 128, 0.1);
+    color: #6b7280;
+}
+
+/* Airport Loading States */
+.airport-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    color: #6b7280;
+}
+
+.airport-loading::before {
+    content: '';
+    width: 20px;
+    height: 20px;
+    border: 2px solid #e5e7eb;
+    border-top: 2px solid #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-right: 12px;
+}
+
+/* Airport Error States */
+.airport-error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    color: #dc2626;
+    background: rgba(220, 38, 38, 0.05);
+    border: 1px solid rgba(220, 38, 38, 0.1);
+    border-radius: 8px;
+    margin: 20px;
+}
+
+.airport-error::before {
+    content: '⚠️';
+    margin-right: 8px;
+    font-size: 18px;
+}
+
+/* Empty State */
+.no-airports {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    color: #6b7280;
+    background: rgba(107, 114, 128, 0.05);
+    border: 1px dashed #d1d5db;
+    border-radius: 8px;
+    margin: 20px;
+}
+
+.no-airports::before {
+    content: '🛩️';
+    margin-right: 8px;
+    font-size: 24px;
+    opacity: 0.5;
+}
+
+/* Responsive Design for Airports */
+@media (max-width: 768px) {
+    .airport-search-container {
+        margin-bottom: 15px;
+        padding-bottom: 12px;
+    }
+    
+    .airport-search-container input {
+        font-size: 14px;
+        padding: 6px 10px;
+    }
+    
+    .airport-search-container button {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+    
+    .airport-item {
+        padding: 6px;
+        margin-bottom: 3px;
+    }
+    
+    .airport-item .airport-header {
+        gap: 4px;
+    }
+    
+    .airport-item .airport-code {
+        font-size: 10px;
+    }
+    
+    .airport-item .airport-type {
+        font-size: 8px;
+        padding: 1px 3px;
+    }
+    
+    .airport-item .airport-details {
+        font-size: 9px;
+    }
+    
+    .airport-item .airport-location {
+        font-size: 8px;
+    }
+    
+    .airport-stats .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+    
+    .airport-stats .stat-item {
+        padding: 6px;
+    }
+}
+
+@media (max-width: 480px) {
+    .airport-filters .filter-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .airport-filters button {
+        width: 100%;
+        font-size: 10px;
+        padding: 4px 8px;
+    }
+    
+    .airport-search-results {
+        max-height: 120px;
+    }
+    
+    .airport-search-result {
+        padding: 6px;
+        font-size: 11px;
+    }
+    
+    .airport-popup {
+        max-width: 250px !important;
+    }
+}
+
+/* Airport Map Layer Controls */
+.airport-layer-control {
+    background: white;
+    border: 2px solid rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    padding: 8px;
+    margin: 10px;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+}
+
+.airport-layer-control label {
+    display: flex;
+    align-items: center;
+    margin-bottom: 4px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.airport-layer-control input[type="checkbox"] {
+    margin-right: 6px;
+}
+
+/* Airport Cluster Styles (if clustering is implemented) */
+.airport-cluster {
+    background: rgba(30, 64, 175, 0.8);
+    color: white;
+    border-radius: 50%;
+    text-align: center;
+    font-weight: bold;
+    border: 3px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.airport-cluster-small {
+    width: 30px;
+    height: 30px;
+    line-height: 24px;
+    font-size: 12px;
+}
+
+.airport-cluster-medium {
+    width: 40px;
+    height: 40px;
+    line-height: 34px;
+    font-size: 14px;
+}
+
+.airport-cluster-large {
+    width: 50px;
+    height: 50px;
+    line-height: 44px;
+    font-size: 16px;
+}
+
+/* Enhanced Map Styles */
+.leaflet-container {
+    font-family: inherit;
+}
+
+.leaflet-popup-content h3 {
+    margin-top: 0;
+    color: #1e40af;
+}
+
+.leaflet-popup-content .airport-meta-info {
+    background: rgba(248, 250, 252, 0.8);
+    border-radius: 4px;
+    padding: 6px 8px;
+    margin: 8px 0;
+    font-size: 11px;
+    border: 1px solid #e2e8f0;
+}
+
+/* Airport Focus Animation */
+.airport-focus-ring {
+    animation: focusRing 1.5s ease-out;
+    pointer-events: none;
+}
+
+@keyframes focusRing {
+    0% {
+        transform: scale(0.5);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(2);
+        opacity: 0;
+    }
+}
+
+/* Print Styles for Airports */
+@media print {
+    .airport-controls,
+    .airport-search-container {
+        display: none;
+    }
+    
+    .airport-popup {
+        background: white !important;
+        color: black !important;
+    }
+}

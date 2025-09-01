@@ -8,6 +8,7 @@ class UIManager {
     constructor() {
         this.currentFormCallback = null;
         this.procedures = [];
+        this.airports = [];
         this.notifications = [];
         this.activeProject = null;
         this.projects = [];
@@ -60,6 +61,570 @@ class UIManager {
         }
     }
     
+    setupAirportSearch() {
+        // Add airport search to the sidebar
+        const procedurePanel = document.querySelector('.panel:first-child');
+        if (procedurePanel) {
+            const airportSearchHtml = `
+                <div class="airport-search-container" style="
+                    margin-bottom: 20px;
+                    padding-bottom: 15px;
+                    border-bottom: 1px solid #e5e7eb;
+                ">
+                    <h4 style="margin-bottom: 10px; color: #374151;">🛩️ Airport Search</h4>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" 
+                               id="airport-search-input" 
+                               placeholder="Search airports (ICAO, name...)"
+                               style="
+                                   flex: 1;
+                                   padding: 8px 12px;
+                                   border: 1px solid #d1d5db;
+                                   border-radius: 6px;
+                                   font-size: 13px;
+                               ">
+                        <button id="airport-search-btn" 
+                                style="
+                                    padding: 8px 12px;
+                                    background: #1e40af;
+                                    color: white;
+                                    border: none;
+                                    border-radius: 6px;
+                                    cursor: pointer;
+                                    font-size: 13px;
+                                ">🔍</button>
+                    </div>
+                    <div id="airport-search-results" style="
+                        margin-top: 8px;
+                        max-height: 150px;
+                        overflow-y: auto;
+                        display: none;
+                    "></div>
+                </div>
+            `;
+            
+            procedurePanel.insertAdjacentHTML('afterbegin', airportSearchHtml);
+            
+            // Setup search handlers
+            const searchInput = document.getElementById('airport-search-input');
+            const searchBtn = document.getElementById('airport-search-btn');
+            const resultsDiv = document.getElementById('airport-search-results');
+            
+            const performSearch = async () => {
+                const query = searchInput.value.trim();
+                if (query.length < 2) {
+                    resultsDiv.style.display = 'none';
+                    document.getElementById('airport-search-input').value = '';
+                }
+            }
+        }
+    }
+
+
+    createAirportFilters(airports) {
+        const filterDiv = document.createElement('div');
+        filterDiv.className = 'airport-filters';
+        
+        // Get unique airport types
+        const types = [...new Set(airports.map(a => a.airport_type))].sort();
+        
+        // Data source indicator
+        const dataSource = window.apiClient ? window.apiClient.getDataSource() : 'unknown';
+        const sourceColor = dataSource === 'database' ? '#10b981' : '#f59e0b';
+        const sourceIcon = dataSource === 'database' ? '🗄️' : '🧪';
+        
+        filterDiv.innerHTML = `
+            <div class="filter-header">
+                <div class="data-source-indicator" style="
+                    background: ${sourceColor}20; 
+                    color: ${sourceColor}; 
+                    padding: 4px 8px; 
+                    border-radius: 6px; 
+                    font-size: 11px; 
+                    font-weight: 600;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 4px;
+                    margin-bottom: 10px;
+                ">
+                    ${sourceIcon} ${dataSource.toUpperCase()} DATA
+                </div>
+            </div>
+            
+            <div class="filter-controls" style="margin-bottom: 15px;">
+                <div class="filter-group">
+                    <label for="airport-type-filter" style="font-size: 12px; font-weight: 500; color: #374151;">Filter by Type:</label>
+                    <select id="airport-type-filter" style="
+                        width: 100%; 
+                        padding: 6px; 
+                        border: 1px solid #d1d5db; 
+                        border-radius: 4px; 
+                        font-size: 12px;
+                        margin-top: 4px;
+                    ">
+                        <option value="all">All Types (${airports.length})</option>
+                        ${types.map(type => {
+                            const count = airports.filter(a => a.airport_type === type).length;
+                            const displayType = type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                            return `<option value="${type}">${displayType} (${count})</option>`;
+                        }).join('')}
+                    </select>
+                </div>
+            </div>
+            
+            <div class="filter-actions" style="margin-bottom: 15px;">
+                <button id="show-all-airports" style="
+                    background: #10b981; color: white; border: none; 
+                    padding: 6px 12px; border-radius: 4px; 
+                    font-size: 11px; cursor: pointer; margin-right: 5px;
+                ">Show All</button>
+                <button id="hide-all-airports" style="
+                    background: #6b7280; color: white; border: none; 
+                    padding: 6px 12px; border-radius: 4px; 
+                    font-size: 11px; cursor: pointer; margin-right: 5px;
+                ">Hide All</button>
+                <button id="refresh-airports" style="
+                    background: #3b82f6; color: white; border: none; 
+                    padding: 6px 12px; border-radius: 4px; 
+                    font-size: 11px; cursor: pointer;
+                ">🔄 Refresh</button>
+            </div>
+        `;
+        
+        // Add event listeners
+        const typeFilter = filterDiv.querySelector('#airport-type-filter');
+        typeFilter.addEventListener('change', (e) => {
+            if (window.mapManager) {
+                window.mapManager.filterAirportsByType(e.target.value);
+            }
+        });
+        
+        const showAllBtn = filterDiv.querySelector('#show-all-airports');
+        showAllBtn.addEventListener('click', () => {
+            airports.forEach(a => a.isVisible = true);
+            if (window.mapManager) {
+                window.mapManager.renderAirports();
+            }
+            this.renderAirportControls(airports);
+        });
+        
+        const hideAllBtn = filterDiv.querySelector('#hide-all-airports');
+        hideAllBtn.addEventListener('click', () => {
+            airports.forEach(a => a.isVisible = false);
+            if (window.mapManager) {
+                window.mapManager.renderAirports();
+            }
+            this.renderAirportControls(airports);
+        });
+        
+        const refreshBtn = filterDiv.querySelector('#refresh-airports');
+        refreshBtn.addEventListener('click', async () => {
+            if (window.mapManager && window.mapManager.loadAirportsFromDatabase) {
+                await window.mapManager.loadAirportsFromDatabase();
+                await this.loadAirportControls();
+            }
+        });
+        
+        return filterDiv;
+    }
+
+    createAirportStats(airports) {
+        const statsDiv = document.createElement('div');
+        statsDiv.className = 'airport-stats';
+        
+        const visibleCount = airports.filter(a => a.isVisible !== false).length;
+        const withRunways = airports.filter(a => a.runway_count > 0).length;
+        const withTower = airports.filter(a => a.has_tower).length;
+        const withILS = airports.filter(a => a.has_ils).length;
+        
+        // Count by type
+        const typeStats = {};
+        airports.forEach(a => {
+            if (!typeStats[a.airport_type]) typeStats[a.airport_type] = 0;
+            typeStats[a.airport_type]++;
+        });
+        
+        statsDiv.innerHTML = `
+            <div class="stats-grid" style="
+                display: grid; 
+                grid-template-columns: 1fr 1fr; 
+                gap: 8px; 
+                margin-bottom: 15px;
+                font-size: 11px;
+            ">
+                <div class="stat-item" style="
+                    background: #f8fafc; 
+                    padding: 8px; 
+                    border-radius: 6px; 
+                    text-align: center;
+                ">
+                    <div style="font-weight: 600; color: #1e40af;">${visibleCount}/${airports.length}</div>
+                    <div style="color: #6b7280;">Visible</div>
+                </div>
+                <div class="stat-item" style="
+                    background: #f8fafc; 
+                    padding: 8px; 
+                    border-radius: 6px; 
+                    text-align: center;
+                ">
+                    <div style="font-weight: 600; color: #1e40af;">${withRunways}</div>
+                    <div style="color: #6b7280;">With Runways</div>
+                </div>
+                <div class="stat-item" style="
+                    background: #f8fafc; 
+                    padding: 8px; 
+                    border-radius: 6px; 
+                    text-align: center;
+                ">
+                    <div style="font-weight: 600; color: #1e40af;">${withTower}</div>
+                    <div style="color: #6b7280;">With Tower</div>
+                </div>
+                <div class="stat-item" style="
+                    background: #f8fafc; 
+                    padding: 8px; 
+                    border-radius: 6px; 
+                    text-align: center;
+                ">
+                    <div style="font-weight: 600; color: #1e40af;">${withILS}</div>
+                    <div style="color: #6b7280;">With ILS</div>
+                </div>
+            </div>
+            
+            <div class="type-breakdown" style="
+                background: #f8fafc; 
+                padding: 8px; 
+                border-radius: 6px; 
+                margin-bottom: 15px;
+            ">
+                <div style="font-weight: 600; font-size: 11px; color: #374151; margin-bottom: 6px;">By Type:</div>
+                ${Object.entries(typeStats).map(([type, count]) => {
+                    const displayType = type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    return `
+                        <div style="
+                            display: flex; 
+                            justify-content: space-between; 
+                            font-size: 10px; 
+                            color: #6b7280; 
+                            margin-bottom: 2px;
+                        ">
+                            <span>${displayType}</span>
+                            <span>${count}</span>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+        
+        return statsDiv;
+    }
+
+
+    createAirportList(airports) {
+        const listDiv = document.createElement('div');
+        listDiv.className = 'airport-list';
+        
+        if (airports.length === 0) {
+            listDiv.innerHTML = `
+                <div class="no-airports" style="
+                    text-align: center; 
+                    padding: 20px; 
+                    color: #6b7280; 
+                    font-size: 12px;
+                ">
+                    No airports available
+                </div>
+            `;
+            return listDiv;
+        }
+        
+        // Sort airports by type, then by ICAO code
+        const sortedAirports = [...airports].sort((a, b) => {
+            if (a.airport_type !== b.airport_type) return a.airport_type.localeCompare(b.airport_type);
+            return a.icao_code.localeCompare(b.icao_code);
+        });
+        
+        listDiv.innerHTML = `
+            <div class="list-header" style="
+                font-weight: 600; 
+                font-size: 11px; 
+                color: #374151; 
+                margin-bottom: 8px; 
+                padding-bottom: 6px; 
+                border-bottom: 1px solid #e5e7eb;
+            ">
+                Airports (${airports.length})
+            </div>
+            <div class="list-container" style="max-height: 300px; overflow-y: auto;">
+                ${sortedAirports.map(airport => this.createAirportItem(airport)).join('')}
+            </div>
+        `;
+        
+        // Add event listeners to airport items
+        listDiv.querySelectorAll('.airport-item').forEach(item => {
+            const icaoCode = item.dataset.icaoCode;
+            const airport = airports.find(a => a.icao_code === icaoCode);
+            
+            if (airport) {
+                // Click to focus
+                item.addEventListener('click', () => {
+                    if (window.mapManager) {
+                        window.mapManager.focusOnAirport(icaoCode);
+                    }
+                });
+                
+                // Toggle visibility
+                const toggleBtn = item.querySelector('.visibility-toggle');
+                if (toggleBtn) {
+                    toggleBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const newVisibility = !airport.isVisible;
+                        if (window.mapManager) {
+                            window.mapManager.toggleAirportVisibility(icaoCode, newVisibility);
+                        }
+                    });
+                }
+                
+                // Show runways button
+                const runwaysBtn = item.querySelector('.show-runways-btn');
+                if (runwaysBtn) {
+                    runwaysBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (window.mapManager) {
+                            window.mapManager.loadAndShowRunways(icaoCode);
+                        }
+                    });
+                }
+            }
+        });
+        
+        return listDiv;
+    }
+
+    createAirportItem(airport) {
+        const isVisible = airport.isVisible !== false;
+        const visibilityIcon = isVisible ? '👁️' : '🙈';
+        const itemOpacity = isVisible ? '1' : '0.5';
+        
+        // Type-specific styling
+        const typeColors = {
+            'large_airport': '#1e40af',
+            'medium_airport': '#3b82f6',
+            'small_airport': '#60a5fa',
+            'heliport': '#f59e0b'
+        };
+        
+        const typeColor = typeColors[airport.airport_type] || '#6b7280';
+        const displayType = airport.airport_type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+        
+        return `
+            <div class="airport-item" 
+                 data-icao-code="${airport.icao_code}" 
+                 style="
+                    display: flex; 
+                    align-items: center; 
+                    justify-content: space-between; 
+                    padding: 8px; 
+                    margin-bottom: 4px; 
+                    background: white; 
+                    border: 1px solid #e5e7eb; 
+                    border-radius: 6px; 
+                    cursor: pointer; 
+                    opacity: ${itemOpacity};
+                    transition: all 0.2s ease;
+                 "
+                 onmouseover="this.style.backgroundColor='#f8fafc'"
+                 onmouseout="this.style.backgroundColor='white'">
+                
+                <div class="airport-info" style="flex: 1; min-width: 0;">
+                    <div class="airport-header" style="
+                        display: flex; 
+                        align-items: center; 
+                        gap: 6px; 
+                        margin-bottom: 2px;
+                    ">
+                        <span class="airport-code" style="
+                            font-weight: 600; 
+                            font-size: 11px; 
+                            color: #1e40af;
+                        ">${airport.icao_code}${airport.iata_code ? `/${airport.iata_code}` : ''}</span>
+                        
+                        <span class="airport-type" style="
+                            background: ${typeColor}20; 
+                            color: ${typeColor}; 
+                            padding: 1px 4px; 
+                            border-radius: 3px; 
+                            font-size: 9px; 
+                            font-weight: 600;
+                        ">${displayType}</span>
+                    </div>
+                    
+                    <div class="airport-details" style="
+                        font-size: 10px; 
+                        color: #6b7280; 
+                        overflow: hidden; 
+                        text-overflow: ellipsis; 
+                        white-space: nowrap;
+                        margin-bottom: 2px;
+                    ">
+                        ${airport.name}
+                    </div>
+                    
+                    <div class="airport-location" style="
+                        font-size: 9px; 
+                        color: #9ca3af; 
+                        overflow: hidden; 
+                        text-overflow: ellipsis; 
+                        white-space: nowrap;
+                    ">
+                        ${airport.municipality}, ${airport.country_code}
+                        ${airport.runway_count ? ` • ${airport.runway_count} RWY` : ''}
+                        ${airport.has_tower ? ' • TWR' : ''}
+                        ${airport.has_ils ? ' • ILS' : ''}
+                    </div>
+                </div>
+                
+                <div class="airport-actions" style="
+                    display: flex; 
+                    align-items: center; 
+                    gap: 4px;
+                ">
+                    ${airport.runway_count > 0 ? `
+                        <button class="show-runways-btn" 
+                                title="Show runways"
+                                style="
+                                    background: none; 
+                                    border: none; 
+                                    font-size: 10px; 
+                                    cursor: pointer; 
+                                    padding: 2px;
+                                    color: #059669;
+                                ">🛬</button>
+                    ` : ''}
+                    <button class="visibility-toggle" 
+                            title="${isVisible ? 'Hide' : 'Show'} airport"
+                            style="
+                                background: none; 
+                                border: none; 
+                                font-size: 12px; 
+                                cursor: pointer; 
+                                padding: 2px;
+                            ">${visibilityIcon}</button>
+                </div>
+            </div>
+        `;
+    }
+
+    renderAirportControls(airports) {
+        console.log('🛩️ Rendering airport controls for', airports.length, 'airports');
+        
+        // Find or create airport controls container
+        let container = document.getElementById('airport-controls');
+        
+        if (!container) {
+            // Create a new panel for airports
+            const sidebar = document.querySelector('.sidebar');
+            if (sidebar) {
+                const airportPanel = document.createElement('div');
+                airportPanel.className = 'panel';
+                airportPanel.innerHTML = `
+                    <h2 class="panel-title">
+                        Airports
+                        <span id="airport-count" class="conflict-count zero">0</span>
+                    </h2>
+                    <div id="airport-controls"></div>
+                `;
+                
+                // Insert after the first panel (procedures)
+                const firstPanel = sidebar.querySelector('.panel');
+                if (firstPanel && firstPanel.nextSibling) {
+                    sidebar.insertBefore(airportPanel, firstPanel.nextSibling);
+                } else {
+                    sidebar.appendChild(airportPanel);
+                }
+                
+                container = document.getElementById('airport-controls');
+            }
+        }
+        
+        if (!container) {
+            console.warn('⚠️ Airport controls container not found');
+            return;
+        }
+        
+        // Update airport count
+        const countElement = document.getElementById('airport-count');
+        if (countElement) {
+            const visibleCount = airports.filter(a => a.isVisible !== false).length;
+            countElement.textContent = visibleCount;
+            countElement.className = `conflict-count ${visibleCount === 0 ? 'zero' : ''}`;
+        }
+        
+        // Clear existing controls
+        container.innerHTML = '';
+        
+        if (!airports || airports.length === 0) {
+            container.innerHTML = `
+                <div class="no-airports">
+                    <p>🛩️ Loading airports from database...</p>
+                </div>
+            `;
+            return;
+        }
+        
+        // Create filter controls
+        const filterControls = this.createAirportFilters(airports);
+        container.appendChild(filterControls);
+        
+        // Create statistics
+        const airportStats = this.createAirportStats(airports);
+        container.appendChild(airportStats);
+        
+        // Create airport list
+        const airportList = this.createAirportList(airports);
+        container.appendChild(airportList);
+        
+        console.log('✅ Airport controls rendered');
+    }
+
+    async loadAirportControls() {
+        try {
+            console.log('🛩️ Loading airport controls...');
+            
+            // Wait for map to be initialized
+            let attempts = 0;
+            const maxAttempts = 20;
+            
+            while (attempts < maxAttempts) {
+                if (window.mapManager && window.mapManager.map && window.mapManager.airports) {
+                    console.log('✅ Map and airports ready, rendering controls');
+                    
+                    // Get airport statistics
+                    const stats = window.mapManager.getAirportStats ? window.mapManager.getAirportStats() : null;
+                    if (stats) {
+                        console.log('📊 Airport statistics:', stats);
+                    }
+                    
+                    // Render airport controls
+                    this.renderAirportControls(window.mapManager.airports);
+                    return;
+                }
+                
+                console.log(`⏳ Waiting for airports... attempt ${attempts + 1}/${maxAttempts}`);
+                await new Promise(resolve => setTimeout(resolve, 500));
+                attempts++;
+            }
+            
+            console.log('⚠️ Airports not loaded after waiting, using empty list');
+            this.renderAirportControls([]);
+            
+        } catch (error) {
+            console.error('❌ Failed to load airport controls:', error);
+            this.renderAirportControls([]);
+        }
+    }
+
+
+
     // Also add this alternative loadModals method that doesn't depend on external files:
     async loadModalsAlternative() {
         console.log('🔄 UIManager: Loading modals (alternative method)...');
@@ -223,6 +788,7 @@ class UIManager {
         
         return filterDiv;
     }
+
 
     createProcedureStats(procedures) {
         const statsDiv = document.createElement('div');
@@ -709,7 +1275,35 @@ initializeProcedureEvents() {
         this.handleProcedureSelection(event.detail.procedure);
     });
     
+    document.addEventListener('airportSelected', (event) => {
+        this.handleAirportSelection(event.detail.airport);
+    });
+
     console.log('✅ Procedure UI events initialized');
+}
+
+handleAirportSelection(airport) {
+    console.log('🎯 Airport selected in UI:', airport.icao_code);
+    
+    // Update UI to show selected state
+    const airportItems = document.querySelectorAll('.airport-item');
+    airportItems.forEach(item => {
+        if (item.dataset.icaoCode === airport.icao_code) {
+            item.style.backgroundColor = '#dbeafe';
+            item.style.borderColor = '#3b82f6';
+        } else {
+            item.style.backgroundColor = 'white';
+            item.style.borderColor = '#e5e7eb';
+        }
+    });
+    
+    // Show notification
+    if (window.showNotification) {
+        window.showNotification(
+            `Selected: ${airport.icao_code} - ${airport.name}`, 
+            'info'
+        );
+    }
 }
 
 
@@ -1682,6 +2276,7 @@ const uiManager = new UIManager();
 export function showDroneZoneForm(geometry, callback) { uiManager.showDroneZoneForm(geometry, callback); }
 export function updateConflictPanel(conflicts, onConflictClick) { uiManager.updateConflictPanel(conflicts, onConflictClick); }
 export function renderProcedureControls(procedures) { uiManager.renderProcedureControls(procedures); }
+export function renderAirportControls(airports) { uiManager.renderAirportControls(airports); }
 export function updateUserInfo(user) { uiManager.updateUserInfo(user); }
 export function showNotification(message, type = 'info', duration = 5000) { uiManager.showNotification(message, type, duration); }
 export function showLoading(show = true) { uiManager.showLoading(show); }

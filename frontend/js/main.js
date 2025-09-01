@@ -9,6 +9,7 @@ import uiManager, {
     showApp, 
     updateUserInfo,
     renderProcedureControls,
+    renderAirportControls,
     showNotification,
     updateProjectBar,
     renderProjectList,
@@ -105,12 +106,21 @@ async refreshAllData() {
         await this.loadProjects();
         
         // Refresh procedures
+        const refreshPromises = [];
+            
         if (mapManager.refreshProcedures) {
-            await mapManager.refreshProcedures();
+            refreshPromises.push(mapManager.refreshProcedures());
         }
+
+        if (mapManager.loadAirportsFromDatabase) {
+            refreshPromises.push(mapManager.loadAirportsFromDatabase());
+        }
+
+        await Promise.all(refreshPromises);
         
         // Refresh procedure controls
         await this.loadProcedureControls();
+        await this.loadAirportControls(); 
         
         showNotification('All data refreshed successfully', 'success');
         console.log('✅ All data refresh complete');
@@ -159,6 +169,7 @@ async refreshAllData() {
             // Wait a bit for map to initialize procedures, then load controls
             setTimeout(async () => {
                 await this.loadProcedureControls();
+                await this.loadAirportControls();
             }, 2000);
 
             // Initialize project bar
@@ -197,6 +208,11 @@ debugApplicationState() {
             const stats = window.mapManager.getProcedureStats();
             console.log('  - Procedure stats:', stats);
         }
+
+        if (window.mapManager.getAirportStats) {
+            const airportStats = window.mapManager.getAirportStats();
+            console.log('  - Airport stats:', airportStats);
+        }
     }
     
     // Check projects
@@ -211,66 +227,118 @@ debugApplicationState() {
     if (procedureControls) {
         console.log('  - Control content length:', procedureControls.innerHTML.length);
     }
+    if (airportControls) {  
+        console.log('  - Airport control content length:', airportControls.innerHTML.length);
+    }
     
     console.log('='.repeat(50));
 }
 
-// Add global debugging helpers
-setupGlobalDebugging() {
-    // Make app instance globally available for debugging
-    window.aeronauticalApp = this;
-    
-    // Add global debug commands
-    window.debugApp = {
-        // Show application state
-        state: () => this.debugApplicationState(),
+    // Add global debugging helpers
+    setupGlobalDebugging() {
+        // Make app instance globally available for debugging
+        window.aeronauticalApp = this;
         
-        // Refresh all data
-        refresh: () => this.refreshAllData(),
-        
-        // Check API connectivity
-        testApi: async () => {
-            console.log('🧪 Testing API connectivity...');
-            try {
-                const health = await window.apiClient.healthCheck();
-                console.log('Health check:', health ? '✅ OK' : '❌ Failed');
-                
-                const projects = await window.apiClient.getProjects();
-                console.log('Projects:', projects.length, 'loaded');
-                
-                const procedures = await window.apiClient.getProcedures();
-                console.log('Procedures:', procedures.length, 'loaded');
-                
-                return { health, projects: projects.length, procedures: procedures.length };
-            } catch (error) {
-                console.error('API test failed:', error);
-                return { error: error.message };
+        // Add global debug commands
+        window.debugApp = {
+            // Show application state
+            state: () => this.debugApplicationState(),
+            
+            // Refresh all data including airports
+            refresh: () => this.refreshAllData(),
+            
+            // Enhanced API connectivity test
+            testApi: async () => {
+                console.log('🧪 Testing API connectivity (enhanced)...');
+                try {
+                    const health = await window.apiClient.healthCheck();
+                    console.log('Health check:', health ? '✅ OK' : '❌ Failed');
+                    
+                    const projects = await window.apiClient.getProjects();
+                    console.log('Projects:', projects.length, 'loaded');
+                    
+                    const procedures = await window.apiClient.getProcedures();
+                    console.log('Procedures:', procedures.length, 'loaded');
+                    
+                    // NEW: Test airport API
+                    const airports = await window.apiClient.getAirports();
+                    console.log('Airports:', airports.length, 'loaded');
+                    
+                    return { 
+                        health, 
+                        projects: projects.length, 
+                        procedures: procedures.length,
+                        airports: airports.length  // NEW
+                    };
+                } catch (error) {
+                    console.error('API test failed:', error);
+                    return { error: error.message };
+                }
+            },
+            
+            // Enhanced map state check
+            map: () => {
+                if (window.mapManager) {
+                    window.mapManager.debugProcedures();
+                    
+                    // NEW: Debug airports
+                    if (window.mapManager.debugAirports) {
+                        window.mapManager.debugAirports();
+                    }
+                    
+                    const procStats = window.mapManager.getProcedureStats();
+                    const airportStats = window.mapManager.getAirportStats ? 
+                                    window.mapManager.getAirportStats() : null;  // NEW
+                    
+                    return { 
+                        procedures: procStats, 
+                        airports: airportStats  // NEW
+                    };
+                }
+                return 'Map not initialized';
+            },
+            
+            // Force procedure reload
+            reloadProcedures: async () => {
+                if (window.mapManager && window.mapManager.refreshProcedures) {
+                    await window.mapManager.refreshProcedures();
+                    await this.loadProcedureControls();
+                    return 'Procedures reloaded';
+                }
+                return 'Map manager not available';
+            },
+            
+            // NEW: Force airport reload
+            reloadAirports: async () => {
+                if (window.mapManager && window.mapManager.loadAirportsFromDatabase) {
+                    await window.mapManager.loadAirportsFromDatabase();
+                    await this.loadAirportControls();
+                    return 'Airports reloaded';
+                }
+                return 'Map manager not available';
+            },
+            
+            // NEW: Search airports
+            searchAirports: async (query) => {
+                if (window.mapManager && window.mapManager.searchAirports) {
+                    return await window.mapManager.searchAirports(query);
+                }
+                return 'Map manager not available';
+            },
+            
+            // NEW: Focus on airport
+            focusAirport: (icao) => {
+                if (window.mapManager && window.mapManager.focusOnAirport) {
+                    window.mapManager.focusOnAirport(icao);
+                    return `Focused on ${icao}`;
+                }
+                return 'Map manager not available';
             }
-        },
+        };
         
-        // Check map state
-        map: () => {
-            if (window.mapManager) {
-                window.mapManager.debugProcedures();
-                return window.mapManager.getProcedureStats();
-            }
-            return 'Map not initialized';
-        },
-        
-        // Force procedure reload
-        reloadProcedures: async () => {
-            if (window.mapManager && window.mapManager.refreshProcedures) {
-                await window.mapManager.refreshProcedures();
-                await this.loadProcedureControls();
-                return 'Procedures reloaded';
-            }
-            return 'Map manager not available';
-        }
-    };
-    
-    console.log('🐛 Global debugging available via window.debugApp');
-    console.log('💡 Try: debugApp.state(), debugApp.testApi(), debugApp.map()');
-}
+        console.log('🐛 Enhanced global debugging available via window.debugApp');
+        console.log('💡 Try: debugApp.state(), debugApp.testApi(), debugApp.searchAirports("KJFK")');
+    }
     
     async loadProjects() {
         try {
@@ -524,6 +592,42 @@ setupGlobalDebugging() {
         } catch (error) {
             console.error('❌ Failed to load procedure controls:', error);
             renderProcedureControls([]);
+        }
+    }
+
+    async loadAirportControls() {
+        try {
+            console.log('🛩️ Loading airport controls...');
+            
+            let attempts = 0;
+            const maxAttempts = 20;
+            
+            while (attempts < maxAttempts) {
+                if (mapManager.map && mapManager.airports) {
+                    console.log('✅ Map and airports ready, rendering controls');
+                    
+                    // Get airport statistics
+                    const stats = mapManager.getAirportStats ? mapManager.getAirportStats() : null;
+                    if (stats) {
+                        console.log('📊 Airport statistics:', stats);
+                    }
+                    
+                    // Render airport controls
+                    renderAirportControls(mapManager.airports);
+                    return;
+                }
+                
+                console.log(`⏳ Waiting for airports... attempt ${attempts + 1}/${maxAttempts}`);
+                await new Promise(resolve => setTimeout(resolve, 500));
+                attempts++;
+            }
+            
+            console.log('⚠️ Airports not loaded after waiting, using empty list');
+            renderAirportControls([]);
+            
+        } catch (error) {
+            console.error('❌ Failed to load airport controls:', error);
+            renderAirportControls([]);
         }
     }
 

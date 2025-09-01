@@ -65,6 +65,355 @@ class ApiClient {
         }
     }
 
+    async getAirports(filters = {}) {
+        console.log('🛩️ Fetching airports...');
+        
+        try {
+            console.log('🔄 Attempting to fetch airports from database...');
+            
+            const queryParams = new URLSearchParams();
+            
+            if (filters.type) {
+                queryParams.append('type', filters.type);
+            }
+            if (filters.active_only !== undefined) {
+                queryParams.append('active_only', filters.active_only);
+            }
+            if (filters.country) {
+                queryParams.append('country', filters.country);
+            }
+            if (filters.bounds) {
+                queryParams.append('min_lat', filters.bounds.min_lat);
+                queryParams.append('max_lat', filters.bounds.max_lat);
+                queryParams.append('min_lng', filters.bounds.min_lng);
+                queryParams.append('max_lng', filters.bounds.max_lng);
+            }
+            if (filters.limit) {
+                queryParams.append('limit', filters.limit);
+            }
+            
+            const endpoint = filters.bounds ? 
+                `/airports/bounds${queryParams.toString() ? '?' + queryParams.toString() : ''}` :
+                `/airports${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+            
+            const response = await this.request(endpoint);
+            
+            const airports = response.data || response;
+            this.dataSource = 'database';
+            
+            console.log(`✅ Successfully fetched ${airports.length} airports from DATABASE`);
+            
+            // Process airports for map display
+            const processedAirports = this.processAirportsForMap(airports);
+            
+            processedAirports._metadata = {
+                source: 'database',
+                timestamp: new Date().toISOString(),
+                count: airports.length
+            };
+            
+            return processedAirports;
+            
+        } catch (error) {
+            console.warn(`⚠️ Database fetch failed for airports: ${error.message}`);
+            
+            console.log('🔄 Falling back to mock airports...');
+            this.dataSource = 'mock';
+            
+            const mockAirports = this.getMockAirports();
+            
+            mockAirports._metadata = {
+                source: 'mock',
+                timestamp: new Date().toISOString(),
+                count: mockAirports.length,
+                reason: error.message
+            };
+            
+            console.log('⚠️ Using mock airports due to database connection failure');
+            return mockAirports;
+        }
+    }
+
+    async getAirportByIcao(icaoCode) {
+        console.log(`🛩️ Fetching airport by ICAO: ${icaoCode}`);
+        
+        try {
+            console.log('🔄 Attempting to fetch from database...');
+            const response = await this.request(`/airports/icao/${icaoCode}`);
+            const airport = response.data || response;
+            
+            this.dataSource = 'database';
+            console.log(`✅ Successfully fetched airport ${icaoCode} from DATABASE`, airport);
+            
+            return this.processAirportForMap(airport);
+            
+        } catch (error) {
+            console.warn(`⚠️ Database fetch failed for airport ${icaoCode}: ${error.message}`);
+            
+            console.log('🔄 Falling back to mock data...');
+            this.dataSource = 'mock';
+            
+            const mockAirports = this.getMockAirports();
+            const airport = mockAirports.find(a => a.icao_code === icaoCode);
+            
+            if (airport) {
+                console.log(`⚠️ Using mock airport ${icaoCode}`);
+                return airport;
+            } else {
+                console.error(`❌ Airport ${icaoCode} not found in mock data either`);
+                return null;
+            }
+        }
+    }
+
+    async searchAirports(query, limit = 20) {
+        console.log(`🔍 Searching airports for: ${query}`);
+        
+        try {
+            console.log('🔄 Attempting to search in database...');
+            const queryParams = new URLSearchParams({
+                q: query,
+                limit: limit.toString()
+            });
+            
+            const response = await this.request(`/airports/search?${queryParams.toString()}`);
+            const airports = response.data || response;
+            
+            this.dataSource = 'database';
+            console.log(`✅ Found ${airports.length} airports matching "${query}" from DATABASE`);
+            
+            return this.processAirportsForMap(airports);
+            
+        } catch (error) {
+            console.warn(`⚠️ Database search failed for "${query}": ${error.message}`);
+            
+            console.log('🔄 Falling back to mock search...');
+            this.dataSource = 'mock';
+            
+            const mockAirports = this.getMockAirports();
+            const filtered = mockAirports.filter(a => 
+                a.icao_code.toLowerCase().includes(query.toLowerCase()) ||
+                a.iata_code.toLowerCase().includes(query.toLowerCase()) ||
+                a.name.toLowerCase().includes(query.toLowerCase()) ||
+                a.municipality.toLowerCase().includes(query.toLowerCase())
+            ).slice(0, limit);
+            
+            console.log(`⚠️ Found ${filtered.length} mock airports matching "${query}"`);
+            return filtered;
+        }
+    }
+
+    async getAirportRunways(icaoCode) {
+        console.log(`🛬 Fetching runways for airport: ${icaoCode}`);
+        
+        try {
+            console.log('🔄 Attempting to fetch from database...');
+            const response = await this.request(`/airports/runways/${icaoCode}`);
+            const runways = response.data || response;
+            
+            this.dataSource = 'database';
+            console.log(`✅ Successfully fetched ${runways.length} runways for ${icaoCode} from DATABASE`);
+            
+            return runways;
+            
+        } catch (error) {
+            console.warn(`⚠️ Database fetch failed for runways of ${icaoCode}: ${error.message}`);
+            
+            console.log('🔄 Falling back to mock runways...');
+            this.dataSource = 'mock';
+            
+            const mockRunways = this.getMockRunways(icaoCode);
+            console.log(`⚠️ Using ${mockRunways.length} mock runways for ${icaoCode}`);
+            return mockRunways;
+        }
+    }
+
+    // Process airports for map display
+    processAirportsForMap(airports) {
+        console.log('🗺️ Processing airports for map display...');
+        
+        const processedAirports = airports.map(airport => this.processAirportForMap(airport));
+        
+        console.log(`✅ Processed ${processedAirports.length} airports for map`);
+        return processedAirports;
+    }
+
+    processAirportForMap(airport) {
+        return {
+            id: airport.id,
+            icao_code: airport.icao_code,
+            iata_code: airport.iata_code,
+            name: airport.name,
+            full_name: airport.full_name,
+            municipality: airport.municipality,
+            country_code: airport.country_code,
+            country_name: airport.country_name,
+            airport_type: airport.airport_type,
+            elevation_ft: airport.elevation_ft,
+            isVisible: true,
+            
+            // Create geometry for map display
+            geometry: {
+                type: 'Feature',
+                properties: {
+                    icao_code: airport.icao_code,
+                    iata_code: airport.iata_code,
+                    name: airport.name,
+                    airport_type: airport.airport_type,
+                    elevation_ft: airport.elevation_ft,
+                    has_tower: airport.has_tower,
+                    has_ils: airport.has_ils,
+                    runway_count: airport.runway_count
+                },
+                geometry: {
+                    type: 'Point',
+                    coordinates: [airport.longitude, airport.latitude]
+                }
+            }
+        };
+    }
+
+    // Mock data for testing
+    getMockAirports() {
+        console.log('🧪 Generating mock airports...');
+        
+        const mockAirports = [
+            {
+                id: 1,
+                icao_code: 'KJFK',
+                iata_code: 'JFK',
+                name: '[MOCK] John F Kennedy Intl',
+                full_name: 'John F Kennedy International Airport',
+                latitude: 40.639751,
+                longitude: -73.778925,
+                elevation_ft: 13,
+                airport_type: 'large_airport',
+                municipality: 'New York',
+                region: 'US-NY',
+                country_code: 'US',
+                country_name: 'United States',
+                is_active: true,
+                has_tower: true,
+                has_ils: true,
+                runway_count: 4,
+                longest_runway_ft: 14572
+            },
+            {
+                id: 2,
+                icao_code: 'KLGA',
+                iata_code: 'LGA',
+                name: '[MOCK] LaGuardia',
+                full_name: 'LaGuardia Airport',
+                latitude: 40.777245,
+                longitude: -73.872608,
+                elevation_ft: 21,
+                airport_type: 'large_airport',
+                municipality: 'New York',
+                region: 'US-NY',
+                country_code: 'US',
+                country_name: 'United States',
+                is_active: true,
+                has_tower: true,
+                has_ils: true,
+                runway_count: 2,
+                longest_runway_ft: 7003
+            },
+            {
+                id: 3,
+                icao_code: 'KEWR',
+                iata_code: 'EWR',
+                name: '[MOCK] Newark Liberty Intl',
+                full_name: 'Newark Liberty International Airport',
+                latitude: 40.692500,
+                longitude: -74.168667,
+                elevation_ft: 18,
+                airport_type: 'large_airport',
+                municipality: 'Newark',
+                region: 'US-NJ',
+                country_code: 'US',
+                country_name: 'United States',
+                is_active: true,
+                has_tower: true,
+                has_ils: true,
+                runway_count: 3,
+                longest_runway_ft: 11000
+            }
+        ];
+        
+        console.log(`🧪 Generated ${mockAirports.length} mock airports`);
+        return mockAirports;
+    }
+
+    getMockRunways(icaoCode) {
+        console.log(`🧪 Generating mock runways for ${icaoCode}...`);
+        
+        const runwayData = {
+            'KJFK': [
+                {
+                    id: 1,
+                    airport_id: 1,
+                    runway_identifier: '04L/22R',
+                    length_ft: 14572,
+                    width_ft: 150,
+                    surface_type: 'ASP',
+                    le_ident: '04L',
+                    le_heading_deg: 40.8,
+                    he_ident: '22R',
+                    he_heading_deg: 220.8,
+                    is_active: true
+                },
+                {
+                    id: 2,
+                    airport_id: 1,
+                    runway_identifier: '04R/22L',
+                    length_ft: 8400,
+                    width_ft: 150,
+                    surface_type: 'ASP',
+                    le_ident: '04R',
+                    le_heading_deg: 40.8,
+                    he_ident: '22L',
+                    he_heading_deg: 220.8,
+                    is_active: true
+                }
+            ],
+            'KLGA': [
+                {
+                    id: 3,
+                    airport_id: 2,
+                    runway_identifier: '04/22',
+                    length_ft: 7003,
+                    width_ft: 150,
+                    surface_type: 'ASP',
+                    le_ident: '04',
+                    le_heading_deg: 40.0,
+                    he_ident: '22',
+                    he_heading_deg: 220.0,
+                    is_active: true
+                }
+            ],
+            'KEWR': [
+                {
+                    id: 4,
+                    airport_id: 3,
+                    runway_identifier: '04L/22R',
+                    length_ft: 11000,
+                    width_ft: 150,
+                    surface_type: 'ASP',
+                    le_ident: '04L',
+                    le_heading_deg: 40.0,
+                    he_ident: '22R',
+                    he_heading_deg: 220.0,
+                    is_active: true
+                }
+            ]
+        };
+        
+        const runways = runwayData[icaoCode] || [];
+        console.log(`🧪 Generated ${runways.length} mock runways for ${icaoCode}`);
+        return runways;
+    }
+
+
     // Enhanced Projects API with database priority
     async getProjects(filters = {}) {
         console.log('📂 Fetching projects...');
@@ -938,7 +1287,10 @@ window.debugApi = {
     getDataSource: () => apiClient.getDataSource(),
     isUsingDatabase: () => apiClient.isUsingDatabase(),
     testConnection: () => apiClient.healthCheck(),
-    getProjects: () => apiClient.getProjects()
+    getProjects: () => apiClient.getProjects(),
+    getAirports: () => apiClient.getAirports(),
+    searchAirports: (query) => apiClient.searchAirports(query),
+    getAirportRunways: (icao) => apiClient.getAirportRunways(icao)
 };
 
 export default apiClient;
