@@ -176,7 +176,7 @@ bool DatabaseManager::executeQuery(const std::string& query) {
 // }
 
 MYSQL_RES* DatabaseManager::executeSelectQuery(const std::string& query) {
-    std::lock_guard<std::recursive_mutex> lock(db_mutex_); // <--- Add lock
+    std::lock_guard<std::recursive_mutex> lock(db_mutex_);
     ensureConnected();
     
     logger_->debug("Executing select query: {}", query);
@@ -202,7 +202,7 @@ MYSQL_RES* DatabaseManager::executeSelectQuery(const std::string& query) {
             return nullptr;
         } else {
             // Query didn't return a result set (e.g., INSERT, UPDATE, DELETE)
-            logger_->debug("Query completed without result set");
+            logger_->debug("Query completed without result set (non-SELECT query)");
             return nullptr;
         }
     } else {

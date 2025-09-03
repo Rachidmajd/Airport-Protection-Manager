@@ -154,9 +154,9 @@ std::vector<FlightProcedure> FlightProcedureRepository::findAll(const FlightProc
         // STEP 1: Update the query string to include the geometry fields
         std::string query = "SELECT fp.id, fp.procedure_code, fp.name, fp.type, "
                            "fp.airport_icao, fp.runway, fp.description, "
-                           "fp.trajectory_geometry, fp.protection_geometry, " // <-- ADDED THESE
+                           "fp.trajectory_geometry, fp.protection_geometry, "
                            "fp.effective_date, fp.expiry_date, fp.is_active, "
-                           "fp.created_at, fp.updated_at " // <-- Also ensure these are selected
+                           "fp.created_at, fp.updated_at "
                            "FROM flight_procedures fp WHERE 1=1";
         
         if (filter.is_active.has_value()) {
