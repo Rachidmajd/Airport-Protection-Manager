@@ -145,78 +145,6 @@ std::string FlightProcedureRepository::buildCountQuery() const {
 //     return procedures;
 // }
 
-std::vector<FlightProcedure> FlightProcedureRepository::findAll(const FlightProcedureFilter& filter) {
-    std::vector<FlightProcedure> procedures;
-    
-    try {
-        auto& db = DatabaseManager::getInstance();
-        
-        // STEP 1: Update the query string to include the geometry fields
-        std::string query = "SELECT fp.id, fp.procedure_code, fp.name, fp.type, "
-                           "fp.airport_icao, fp.runway, fp.description, "
-                           "fp.trajectory_geometry, fp.protection_geometry, "
-                           "fp.effective_date, fp.expiry_date, fp.is_active, "
-                           "fp.created_at, fp.updated_at "
-                           "FROM flight_procedures fp WHERE 1=1";
-        
-        if (filter.is_active.has_value()) {
-            query += " AND fp.is_active = " + std::to_string(*filter.is_active ? 1 : 0);
-        }
-        
-        // Add other filters if you need them (from your original code)
-        if (filter.airport_icao) {
-            query += " AND fp.airport_icao = '" + *filter.airport_icao + "'";
-        }
-
-        query += " ORDER BY fp.procedure_code ASC";
-        query += " LIMIT " + std::to_string(filter.limit) + " OFFSET " + std::to_string(filter.offset);
-        
-        logger_->debug("Executing flight procedures query: {}", query);
-        
-        MYSQL_RES* result = db.executeSelectQuery(query);
-        if (!result) {
-            logger_->warn("Flight procedures query failed, returning empty list");
-            return procedures;
-        }
-        
-        MYSQL_ROW row;
-        while ((row = mysql_fetch_row(result))) {
-            FlightProcedure procedure;
-            
-            // STEP 2: Update the mapping logic to read the new columns
-            int col = 0;
-            procedure.id = row[col] ? std::atoi(row[col]) : 0; col++;
-            procedure.procedure_code = row[col] ? std::string(row[col]) : ""; col++;
-            procedure.name = row[col] ? std::string(row[col]) : ""; col++;
-            procedure.type = row[col] ? stringToProcedureType(std::string(row[col])) : ProcedureType::SID; col++;
-            procedure.airport_icao = row[col] ? std::string(row[col]) : ""; col++;
-            if (row[col]) procedure.runway = std::string(row[col]); col++;
-            if (row[col]) procedure.description = std::string(row[col]); col++;
-            
-            // This is the new mapping part
-            if (row[col]) procedure.trajectory_geometry = std::string(row[col]); col++;
-            if (row[col]) procedure.protection_geometry = std::string(row[col]); col++;
-            
-            // Resume with the rest of the columns
-            if (row[col]) procedure.effective_date = stringToTimePoint(std::string(row[col])); col++;
-            if (row[col]) procedure.expiry_date = stringToTimePoint(std::string(row[col])); col++;
-            procedure.is_active = row[col] ? (std::atoi(row[col]) != 0) : true; col++;
-            if (row[col]) procedure.created_at = stringToTimePoint(std::string(row[col])); col++;
-            if (row[col]) procedure.updated_at = stringToTimePoint(std::string(row[col])); col++;
-            
-            procedures.push_back(procedure);
-        }
-        
-        mysql_free_result(result);
-        
-        logger_->debug("Found {} flight procedures", procedures.size());
-    } catch (const std::exception& err) {
-        logger_->error("Failed to fetch flight procedures: {}", err.what());
-        return std::vector<FlightProcedure>();
-    }
-    
-    return procedures;
-}
 
 
 std::optional<FlightProcedure> FlightProcedureRepository::findById(int id) {
@@ -572,6 +500,153 @@ ProcedureProtection FlightProcedureRepository::rowToProtection(MYSQL_ROW row, un
     
     return p;
 }
+
+std::vector<FlightProcedure> FlightProcedureRepository::findAll(const FlightProcedureFilter& filter) {
+    std::vector<FlightProcedure> procedures;
+    
+    try {
+        logger_->info("=== STARTING FlightProcedureRepository::findAll ===");
+        
+        auto& db = DatabaseManager::getInstance();
+        
+        // Test database connection first
+        if (!db.isConnected()) {
+            logger_->error("Database is not connected!");
+            return procedures;
+        }
+        logger_->debug("Database connection confirmed");
+        
+        // Build the query
+        std::string query = "SELECT fp.id, fp.procedure_code, fp.name, fp.type, "
+                           "fp.airport_icao, fp.runway, fp.description, "
+                           "fp.trajectory_geometry, fp.protection_geometry, "
+                           "fp.effective_date, fp.expiry_date, fp.is_active, "
+                           "fp.created_at, fp.updated_at "
+                           "FROM flight_procedures fp WHERE 1=1";
+        
+        if (filter.is_active.has_value()) {
+            query += " AND fp.is_active = " + std::to_string(*filter.is_active ? 1 : 0);
+            logger_->debug("Added is_active filter: {}", *filter.is_active);
+        }
+        
+        if (filter.airport_icao) {
+            query += " AND fp.airport_icao = '" + *filter.airport_icao + "'";
+            logger_->debug("Added airport_icao filter: {}", *filter.airport_icao);
+        }
+
+        query += " ORDER BY fp.procedure_code ASC";
+        query += " LIMIT " + std::to_string(filter.limit) + " OFFSET " + std::to_string(filter.offset);
+        
+        logger_->info("Final query: {}", query);
+        
+        // Execute the query
+        logger_->debug("About to execute query...");
+        MYSQL_RES* result = db.executeSelectQuery(query);
+        
+        if (!result) {
+            logger_->error("executeSelectQuery returned NULL!");
+            
+            // Get MySQL error details
+            MYSQL* conn = db.getConnection();
+            if (conn) {
+                unsigned int error_code = mysql_errno(conn);
+                const char* error_msg = mysql_error(conn);
+                logger_->error("MySQL Error Code: {}, Message: '{}'", error_code, error_msg ? error_msg : "no error message");
+            }
+            return procedures;
+        }
+        
+        logger_->debug("Query executed successfully, got result set");
+        
+        // Check number of rows
+        unsigned long num_rows = mysql_num_rows(result);
+        logger_->info("Query returned {} rows", num_rows);
+        
+        if (num_rows == 0) {
+            logger_->warn("Query returned 0 rows - this is likely why frontend shows no procedures");
+            mysql_free_result(result);
+            return procedures;
+        }
+        
+        // Check number of fields
+        unsigned int num_fields = mysql_num_fields(result);
+        logger_->debug("Query returned {} fields", num_fields);
+        
+        // Get field information
+        MYSQL_FIELD* fields = mysql_fetch_fields(result);
+        logger_->debug("Field names:");
+        for (unsigned int i = 0; i < num_fields; i++) {
+            logger_->debug("  Field {}: {}", i, fields[i].name ? fields[i].name : "NULL");
+        }
+        
+        // Process rows
+        MYSQL_ROW row;
+        int row_count = 0;
+        while ((row = mysql_fetch_row(result))) {
+            row_count++;
+            logger_->debug("Processing row {}", row_count);
+            
+            // Log raw row data
+            for (unsigned int i = 0; i < num_fields; i++) {
+                logger_->debug("  Row {} Field {}: '{}'", row_count, i, row[i] ? row[i] : "NULL");
+            }
+            
+            try {
+                FlightProcedure procedure;
+                
+                int col = 0;
+                procedure.id = row[col] ? std::atoi(row[col]) : 0; 
+                logger_->debug("  Parsed ID: {}", procedure.id);
+                col++;
+                
+                procedure.procedure_code = row[col] ? std::string(row[col]) : ""; 
+                logger_->debug("  Parsed code: '{}'", procedure.procedure_code);
+                col++;
+                
+                procedure.name = row[col] ? std::string(row[col]) : ""; 
+                logger_->debug("  Parsed name: '{}'", procedure.name);
+                col++;
+                
+                procedure.type = row[col] ? stringToProcedureType(std::string(row[col])) : ProcedureType::SID; 
+                logger_->debug("  Parsed type: '{}'", row[col] ? row[col] : "NULL");
+                col++;
+                
+                procedure.airport_icao = row[col] ? std::string(row[col]) : ""; 
+                logger_->debug("  Parsed airport: '{}'", procedure.airport_icao);
+                col++;
+                
+                if (row[col]) procedure.runway = std::string(row[col]); col++;
+                if (row[col]) procedure.description = std::string(row[col]); col++;
+                
+                // Geometry fields
+                if (row[col]) procedure.trajectory_geometry = std::string(row[col]); col++;
+                if (row[col]) procedure.protection_geometry = std::string(row[col]); col++;
+                
+                // Skip date parsing for now to isolate the issue
+                col += 5; // Skip the remaining columns
+                
+                procedures.push_back(procedure);
+                logger_->info("Successfully parsed procedure: {} - {}", procedure.procedure_code, procedure.name);
+                
+            } catch (const std::exception& e) {
+                logger_->error("Error parsing row {}: {}", row_count, e.what());
+                continue;
+            }
+        }
+        
+        mysql_free_result(result);
+        
+        logger_->info("=== COMPLETED: Successfully loaded {} flight procedures ===", procedures.size());
+        
+    } catch (const std::exception& err) {
+        logger_->error("=== EXCEPTION in findAll: {} ===", err.what());
+        return std::vector<FlightProcedure>();
+    }
+    
+    return procedures;
+}
+
+
 
 std::vector<ProcedureProtection> FlightProcedureRepository::findAllActiveProtections() {
     std::vector<ProcedureProtection> protections;

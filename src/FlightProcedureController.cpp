@@ -134,67 +134,61 @@ void FlightProcedureController::registerRoutes(crow::SimpleApp& app) {
 
 crow::response FlightProcedureController::getProcedures(const crow::request& req) {
     try {
+        logger_->info("=== STARTING getProcedures controller method ===");
+        
         FlightProcedureFilter filter;
         
-        // Parse query parameters
+        // Parse query parameters (existing code...)
         auto query = crow::query_string(req.url_params);
-        
-        if (query.get("type")) {
-            filter.type = stringToProcedureType(query.get("type"));
-        }
-        
-        if (query.get("airport_icao")) {
-            filter.airport_icao = query.get("airport_icao");
-        }
-        
-        if (query.get("runway")) {
-            filter.runway = query.get("runway");
-        }
         
         if (query.get("is_active")) {
             std::string active_str = query.get("is_active");
             filter.is_active = (active_str == "true" || active_str == "1");
+            logger_->debug("Parsed is_active filter: {}", *filter.is_active);
+        } else {
+            // DEFAULT: Set is_active to true if not specified
+            filter.is_active = true;
+            logger_->debug("Using default is_active = true");
         }
         
-        // if (query.get("include_segments")) {
-        //     std::string segments_str = query.get("include_segments");
-        //     filter.include_segments = (segments_str == "true" || segments_str == "1");
-        // }
-        
-        // if (query.get("include_protections")) {
-        //     std::string protections_str = query.get("include_protections");
-        //     filter.include_protections = (protections_str == "true" || protections_str == "1");
-        // }
-        
-        if (query.get("limit")) {
-            filter.limit = std::stoi(query.get("limit"));
-            if (filter.limit > 500) filter.limit = 500; // Max limit
-        }
-        
-        if (query.get("offset")) {
-            filter.offset = std::stoi(query.get("offset"));
-        }
-        
+        logger_->debug("Calling repository findAll...");
         auto procedures = repository_->findAll(filter);
+        logger_->info("Repository returned {} procedures", procedures.size());
+        
         int total = repository_->count(filter);
+        logger_->debug("Repository count returned: {}", total);
         
         nlohmann::json response;
         response["data"] = nlohmann::json::array();
-        for (const auto& procedure : procedures) {
-            response["data"].push_back(procedure.toJson());
+        
+        for (size_t i = 0; i < procedures.size(); i++) {
+            try {
+                auto proc_json = procedures[i].toJson();
+                response["data"].push_back(proc_json);
+                logger_->debug("Converted procedure {} to JSON: {}", i, procedures[i].procedure_code);
+            } catch (const std::exception& e) {
+                logger_->error("Error converting procedure {} to JSON: {}", i, e.what());
+                continue;
+            }
         }
+        
         response["total"] = total;
         response["limit"] = filter.limit;
         response["offset"] = filter.offset;
         
-        return successResponse(response);
+        logger_->info("Final response JSON array size: {}", response["data"].size());
+        logger_->debug("Full response: {}", response.dump());
+        
+        auto crow_response = successResponse(response);
+        logger_->info("=== COMPLETED getProcedures - returning HTTP response ===");
+        
+        return crow_response;
         
     } catch (const std::exception& e) {
-        logger_->error("Failed to get procedures: {}", e.what());
+        logger_->error("=== EXCEPTION in getProcedures: {} ===", e.what());
         return errorResponse(500, "Internal server error");
     }
 }
-
 crow::response FlightProcedureController::getProcedure(int id) {
     try {
         auto procedure = repository_->findById(id);

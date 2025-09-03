@@ -179,19 +179,23 @@ MYSQL_RES* DatabaseManager::executeSelectQuery(const std::string& query) {
     std::lock_guard<std::recursive_mutex> lock(db_mutex_);
     ensureConnected();
     
-    logger_->debug("Executing select query: {}", query);
+    logger_->info("=== EXECUTING SELECT QUERY ===");
+    logger_->debug("Query: {}", query);
+    logger_->debug("Query length: {} characters", query.length());
     
     if (mysql_query(connection_, query.c_str())) {
         unsigned int error_code = mysql_errno(connection_);
         const char* error_msg = mysql_error(connection_);
         const char* sqlstate = mysql_sqlstate(connection_);
         
-        logger_->error("Select query failed: {} - Error Code: {}, SQLSTATE: {}, Message: '{}'", 
+        logger_->error("SELECT query failed: {} - Error Code: {}, SQLSTATE: {}, Message: '{}'", 
                       query, error_code, sqlstate ? sqlstate : "unknown", 
                       error_msg ? error_msg : "no error message");
         
         return nullptr;
     }
+    
+    logger_->debug("mysql_query executed successfully");
     
     MYSQL_RES* result = mysql_store_result(connection_);
     if (!result) {
@@ -207,9 +211,24 @@ MYSQL_RES* DatabaseManager::executeSelectQuery(const std::string& query) {
         }
     } else {
         unsigned long num_rows = mysql_num_rows(result);
-        logger_->debug("Query returned {} rows", num_rows);
+        unsigned int num_fields = mysql_num_fields(result);
+        logger_->info("Query returned {} rows, {} fields", num_rows, num_fields);
+        
+        if (num_rows == 0) {
+            logger_->warn("WARNING: Query returned 0 rows!");
+        }
+        
+        // Log field names for debugging
+        MYSQL_FIELD* fields = mysql_fetch_fields(result);
+        if (fields) {
+            logger_->debug("Field names: ");
+            for (unsigned int i = 0; i < num_fields; i++) {
+                logger_->debug("  {}: {}", i, fields[i].name ? fields[i].name : "NULL");
+            }
+        }
     }
     
+    logger_->info("=== SELECT QUERY COMPLETED SUCCESSFULLY ===");
     return result;
 }
 
