@@ -8,6 +8,7 @@
 #include "ProjectController.h"
 #include "FlightProcedureController.h"
 #include "AirportController.h"
+#include "WaypointController.h"
 
 void setupLogger() {
     // Console sink
@@ -117,6 +118,10 @@ int main(int argc, char* argv[]) {
         aeronautical::AirportController airportController;
         airportController.registerRoutes(app);
         logger->info("Airport controller registered");
+
+        aeronautical::WaypointController waypointController;
+        waypointController.registerRoutes(app);
+        logger->info("Waypoint controller registered");
 
         
         // TODO: Add more controllers as needed

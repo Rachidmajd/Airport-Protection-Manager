@@ -3,7 +3,10 @@
 #include <string>
 #include <memory>
 #include <spdlog/spdlog.h>
-#include <mutex> // <--- Add this header
+#include <thread>
+#include <mutex>
+#include <unordered_map>
+
 // Conditional includes based on available MySQL API
 #ifdef USE_MYSQL_C_API
     #include <mysql/mysql.h>
@@ -41,29 +44,43 @@ public:
     bool isConnected();
     void reconnect();
     
+    // Cleanup for application shutdown
+    void cleanup();
+    
 private:
     DatabaseManager();
     ~DatabaseManager();
 
-    std::recursive_mutex db_mutex_; // <--- Add the mutex here
-    
 #ifdef USE_MYSQL_C_API
-    MYSQL* connection_;
+    // Thread-local connection management
+    static thread_local MYSQL* thread_connection_;
+    static std::mutex connections_mutex_;
+    static std::unordered_map<std::thread::id, MYSQL*> active_connections_;
+    
+    // Connection parameters
     std::string host_;
     int port_;
     std::string user_;
     std::string password_;
     std::string database_name_;
-    void connectToDatabase();
-    void cleanup();
+    
+    // Thread-safe connection methods
+    void ensureThreadConnection();
+    MYSQL* createNewConnection();
+    void cleanupThreadConnection();
+    void registerConnection(MYSQL* conn);
+    void unregisterConnection(MYSQL* conn);
+    
 #else
     std::unique_ptr<mysqlx::Session> session_;
     std::string database_name_;
 #endif
     
     std::shared_ptr<spdlog::logger> logger_;
+    std::mutex logger_mutex_; // Protect logger access
     
     void ensureConnected();
+    bool initialized_ = false;
 };
 
 } // namespace aeronautical

@@ -7,29 +7,37 @@
 
 namespace aeronautical {
 
+#ifdef USE_MYSQL_C_API
+// Static member definitions for thread-local storage
+thread_local MYSQL* DatabaseManager::thread_connection_ = nullptr;
+std::mutex DatabaseManager::connections_mutex_;
+std::unordered_map<std::thread::id, MYSQL*> DatabaseManager::active_connections_;
+#endif
+
 DatabaseManager& DatabaseManager::getInstance() {
     static DatabaseManager instance;
     return instance;
 }
 
-DatabaseManager::DatabaseManager() : connection_(nullptr) {
+DatabaseManager::DatabaseManager() {
+#ifdef USE_MYSQL_C_API
+    // Initialize MySQL library (thread-safe)
+    if (mysql_library_init(0, nullptr, nullptr)) {
+        throw std::runtime_error("Could not initialize MySQL library");
+    }
+#endif
 }
 
 DatabaseManager::~DatabaseManager() {
-#ifdef USE_MYSQL_C_API
     cleanup();
-#else
-    if (session_) {
-        session_->close();
-    }
-#endif
 }
 
 void DatabaseManager::initialize(const std::string& host, int port, 
                                 const std::string& user, const std::string& password, 
                                 const std::string& database) {
     try {
-        // Initialize logger
+        // Initialize logger with mutex protection
+        std::lock_guard<std::mutex> logger_lock(logger_mutex_);
         try {
             logger_ = spdlog::get("aeronautical");
             if (!logger_) {
@@ -41,24 +49,24 @@ void DatabaseManager::initialize(const std::string& host, int port,
             logger_ = spdlog::default_logger();
         }
         
-        database_name_ = database;
-        
 #ifdef USE_MYSQL_C_API
-        // Store connection parameters for reconnection
+        // Store connection parameters for thread-local connections
         host_ = host;
         port_ = port;
         user_ = user;
         password_ = password;
+        database_name_ = database;
         
-        // Initialize MySQL library
-        if (mysql_library_init(0, nullptr, nullptr)) {
-            throw std::runtime_error("Could not initialize MySQL library");
+        // Test initial connection to verify parameters
+        MYSQL* test_conn = createNewConnection();
+        if (!test_conn) {
+            throw std::runtime_error("Failed to establish initial test connection");
         }
         
-        // Create initial connection
-        connectToDatabase();
+        // Close test connection - each thread will create its own
+        mysql_close(test_conn);
         
-        logger_->info("Database connection established to {}:{}/{} (MySQL C API)", host, port, database);
+        logger_->info("Database connection parameters validated for {}:{}/{} (MySQL C API)", host, port, database);
         
 #else
         std::stringstream ss;
@@ -66,181 +74,351 @@ void DatabaseManager::initialize(const std::string& host, int port,
            << host << ":" << port << "/" << database;
         
         session_ = std::make_unique<mysqlx::Session>(ss.str());
+        database_name_ = database;
         
         logger_->info("Database connection established to {}:{}/{} (MySQL Connector/C++)", host, port, database);
 #endif
+
+        initialized_ = true;
+        
     } catch (const std::exception& err) {
-        logger_->error("Failed to connect to database: {}", err.what());
+        if (logger_) {
+            logger_->error("Failed to initialize database: {}", err.what());
+        }
         throw;
     }
 }
 
 #ifdef USE_MYSQL_C_API
 
-void DatabaseManager::connectToDatabase() {
-    // Clean up any existing connection
-    if (connection_) {
-        mysql_close(connection_);
-        connection_ = nullptr;
-    }
-    
-    // Create new connection
-    connection_ = mysql_init(nullptr);
-    if (!connection_) {
-        throw std::runtime_error("Failed to initialize MySQL connection");
+MYSQL* DatabaseManager::createNewConnection() {
+    MYSQL* conn = mysql_init(nullptr);
+    if (!conn) {
+        if (logger_) logger_->error("Failed to initialize MySQL connection");
+        return nullptr;
     }
     
     // Set connection options
     unsigned int timeout = 10;
-    mysql_options(connection_, MYSQL_OPT_CONNECT_TIMEOUT, &timeout);
+    mysql_options(conn, MYSQL_OPT_CONNECT_TIMEOUT, &timeout);
     
-    // Don't use auto-reconnect as it can cause issues
-    my_bool reconnect = 0;
-    mysql_options(connection_, MYSQL_OPT_RECONNECT, &reconnect);
+    // Enable auto-reconnect for this connection
+    my_bool reconnect = 1;
+    mysql_options(conn, MYSQL_OPT_RECONNECT, &reconnect);
+    
+    // Set charset
+    mysql_options(conn, MYSQL_SET_CHARSET_NAME, "utf8mb4");
     
     // Connect to database
-    if (!mysql_real_connect(connection_, host_.c_str(), user_.c_str(), 
+    if (!mysql_real_connect(conn, host_.c_str(), user_.c_str(), 
                            password_.c_str(), database_name_.c_str(), port_, nullptr, 0)) {
-        std::string error = mysql_error(connection_);
-        unsigned int error_code = mysql_errno(connection_);
-        mysql_close(connection_);
-        connection_ = nullptr;
-        throw std::runtime_error("Failed to connect to database: " + error + " (Code: " + std::to_string(error_code) + ")");
+        std::string error = mysql_error(conn);
+        unsigned int error_code = mysql_errno(conn);
+        
+        if (logger_) {
+            logger_->error("Failed to connect to database: {} (Code: {})", error, error_code);
+        }
+        
+        mysql_close(conn);
+        return nullptr;
     }
     
-    // Set charset to utf8mb4
-    if (mysql_set_character_set(connection_, "utf8mb4")) {
-        logger_->warn("Failed to set UTF-8 character set: {}", mysql_error(connection_));
+    return conn;
+}
+
+void DatabaseManager::ensureThreadConnection() {
+    if (!initialized_) {
+        throw std::runtime_error("DatabaseManager not initialized");
+    }
+    
+    // Check if we already have a valid connection for this thread
+    if (thread_connection_) {
+        // Test connection health
+        if (mysql_ping(thread_connection_) == 0) {
+            return; // Connection is healthy
+        }
+        
+        // Connection is dead, clean it up
+        if (logger_) {
+            std::ostringstream oss;
+            oss << std::this_thread::get_id();
+            logger_->warn("Thread connection lost, reconnecting... Thread ID: {}", oss.str());
+        }
+        cleanupThreadConnection();
+    }
+    
+    // Create new connection for this thread
+    thread_connection_ = createNewConnection();
+    if (!thread_connection_) {
+        throw std::runtime_error("Failed to create thread-local MySQL connection");
+    }
+    
+    // Register this connection for cleanup tracking
+    registerConnection(thread_connection_);
+    
+    if (logger_) {
+        std::ostringstream oss;
+        oss << std::this_thread::get_id();
+        logger_->debug("Created thread-local connection for thread: {}", oss.str());
+    }
+}
+
+void DatabaseManager::registerConnection(MYSQL* conn) {
+    std::lock_guard<std::mutex> lock(connections_mutex_);
+    active_connections_[std::this_thread::get_id()] = conn;
+}
+
+void DatabaseManager::unregisterConnection(MYSQL* conn) {
+    std::lock_guard<std::mutex> lock(connections_mutex_);
+    auto thread_id = std::this_thread::get_id();
+    auto it = active_connections_.find(thread_id);
+    if (it != active_connections_.end() && it->second == conn) {
+        active_connections_.erase(it);
+    }
+}
+
+void DatabaseManager::cleanupThreadConnection() {
+    if (thread_connection_) {
+        unregisterConnection(thread_connection_);
+        mysql_close(thread_connection_);
+        thread_connection_ = nullptr;
     }
 }
 
 MYSQL* DatabaseManager::getConnection() {
-    ensureConnected();
-    return connection_;
+    ensureThreadConnection();
+    return thread_connection_;
 }
 
 bool DatabaseManager::executeQuery(const std::string& query) {
-    std::lock_guard<std::recursive_mutex> lock(db_mutex_); // <--- Add lock
-    ensureConnected();
-    
-    logger_->debug("Executing query: {}", query);
-    
-    if (mysql_query(connection_, query.c_str())) {
-        unsigned int error_code = mysql_errno(connection_);
-        const char* error_msg = mysql_error(connection_);
-        const char* sqlstate = mysql_sqlstate(connection_);
+    try {
+        ensureThreadConnection();
         
-        logger_->error("Query failed: {} - Error Code: {}, SQLSTATE: {}, Message: '{}'", 
-                      query, error_code, sqlstate ? sqlstate : "unknown", 
-                      error_msg ? error_msg : "no error message");
+        if (logger_) {
+            std::ostringstream oss;
+            oss << std::this_thread::get_id();
+            logger_->debug("Executing query on thread {}: {}", oss.str(), query);
+        }
+        
+        if (mysql_query(thread_connection_, query.c_str())) {
+            unsigned int error_code = mysql_errno(thread_connection_);
+            const char* error_msg = mysql_error(thread_connection_);
+            const char* sqlstate = mysql_sqlstate(thread_connection_);
+            
+            if (logger_) {
+                std::ostringstream oss;
+                oss << std::this_thread::get_id();
+                logger_->error("Query failed on thread {}: {} - Error Code: {}, SQLSTATE: {}, Message: '{}'", 
+                             oss.str(), query, error_code, 
+                             sqlstate ? sqlstate : "unknown", 
+                             error_msg ? error_msg : "no error message");
+            }
+            
+            // If it's a connection error, force reconnection on next call
+            if (error_code == CR_SERVER_GONE_ERROR || error_code == CR_SERVER_LOST) {
+                cleanupThreadConnection();
+            }
+            
+            return false;
+        }
+        
+        if (logger_) {
+            std::ostringstream oss;
+            oss << std::this_thread::get_id();
+            logger_->debug("Query executed successfully on thread {}", oss.str());
+        }
+        return true;
+        
+    } catch (const std::exception& e) {
+        if (logger_) {
+            std::ostringstream oss;
+            oss << std::this_thread::get_id();
+            logger_->error("Exception in executeQuery on thread {}: {}", oss.str(), e.what());
+        }
         return false;
     }
-    
-    logger_->debug("Query executed successfully");
-    return true;
 }
 
-// MYSQL_RES* DatabaseManager::executeSelectQuery(const std::string& query) {
-//     ensureConnected();
-    
-//     logger_->debug("Executing select query: {}", query);
-    
-//     if (mysql_query(connection_, query.c_str())) {
-//         unsigned int error_code = mysql_errno(connection_);
-//         const char* error_msg = mysql_error(connection_);
-//         const char* sqlstate = mysql_sqlstate(connection_);
-        
-//         logger_->error("Select query failed: {} - Error Code: {}, SQLSTATE: {}, Message: '{}'", 
-//                       query, error_code, sqlstate ? sqlstate : "unknown", 
-//                       error_msg ? error_msg : "no error message");
-        
-//         return nullptr;
-//     }
-    
-//     MYSQL_RES* result = mysql_store_result(connection_);
-//     if (!result) {
-//         // Check if this was supposed to return a result set
-//         if (mysql_field_count(connection_) > 0) {
-//             logger_->error("Failed to store result for query: {} - Error: '{}'", 
-//                           query, mysql_error(connection_));
-//             return nullptr;
-//         }
-//         // Query didn't return a result set (e.g., INSERT, UPDATE, DELETE)
-//         logger_->debug("Query completed without result set");
-//     } else {
-//         unsigned long num_rows = mysql_num_rows(result);
-//         logger_->debug("Query returned {} rows", num_rows);
-//     }
-    
-//     return result;
-// }
-
 MYSQL_RES* DatabaseManager::executeSelectQuery(const std::string& query) {
-    std::lock_guard<std::recursive_mutex> lock(db_mutex_);
-    ensureConnected();
-    
-    logger_->info("=== EXECUTING SELECT QUERY ===");
-    logger_->debug("Query: {}", query);
-    logger_->debug("Query length: {} characters", query.length());
-    
-    if (mysql_query(connection_, query.c_str())) {
-        unsigned int error_code = mysql_errno(connection_);
-        const char* error_msg = mysql_error(connection_);
-        const char* sqlstate = mysql_sqlstate(connection_);
+    try {
+        ensureThreadConnection();
         
-        logger_->error("SELECT query failed: {} - Error Code: {}, SQLSTATE: {}, Message: '{}'", 
-                      query, error_code, sqlstate ? sqlstate : "unknown", 
-                      error_msg ? error_msg : "no error message");
+        if (logger_) {
+            std::ostringstream oss;
+            oss << std::this_thread::get_id();
+            logger_->info("=== EXECUTING SELECT QUERY ON THREAD {} ===", oss.str());
+            logger_->debug("Query: {}", query);
+            logger_->debug("Query length: {} characters", query.length());
+        }
         
-        return nullptr;
-    }
-    
-    logger_->debug("mysql_query executed successfully");
-    
-    MYSQL_RES* result = mysql_store_result(connection_);
-    if (!result) {
-        // Check if this was supposed to return a result set
-        if (mysql_field_count(connection_) > 0) {
-            logger_->error("Failed to store result for query: {} - Error: '{}'", 
-                          query, mysql_error(connection_));
+        if (mysql_query(thread_connection_, query.c_str())) {
+            unsigned int error_code = mysql_errno(thread_connection_);
+            const char* error_msg = mysql_error(thread_connection_);
+            const char* sqlstate = mysql_sqlstate(thread_connection_);
+            
+            if (logger_) {
+                std::ostringstream oss;
+                oss << std::this_thread::get_id();
+                logger_->error("SELECT query failed on thread {}: {} - Error Code: {}, SQLSTATE: {}, Message: '{}'", 
+                             oss.str(), query, error_code, 
+                             sqlstate ? sqlstate : "unknown", 
+                             error_msg ? error_msg : "no error message");
+            }
+            
+            // If it's a connection error, force reconnection on next call
+            if (error_code == CR_SERVER_GONE_ERROR || error_code == CR_SERVER_LOST) {
+                cleanupThreadConnection();
+            }
+            
             return nullptr;
+        }
+        
+        if (logger_) {
+            std::ostringstream oss;
+            oss << std::this_thread::get_id();
+            logger_->debug("mysql_query executed successfully on thread {}", oss.str());
+        }
+        
+        MYSQL_RES* result = mysql_store_result(thread_connection_);
+        if (!result) {
+            // Check if this was supposed to return a result set
+            if (mysql_field_count(thread_connection_) > 0) {
+                if (logger_) {
+                    std::ostringstream oss;
+                    oss << std::this_thread::get_id();
+                    logger_->error("Failed to store result for query on thread {}: {} - Error: '{}'", 
+                                 oss.str(), query, mysql_error(thread_connection_));
+                }
+                return nullptr;
+            } else {
+                // Query didn't return a result set (e.g., INSERT, UPDATE, DELETE)
+                if (logger_) {
+                    std::ostringstream oss;
+                    oss << std::this_thread::get_id();
+                    logger_->debug("Query completed without result set on thread {} (non-SELECT query)", 
+                                 oss.str());
+                }
+                return nullptr;
+            }
         } else {
-            // Query didn't return a result set (e.g., INSERT, UPDATE, DELETE)
-            logger_->debug("Query completed without result set (non-SELECT query)");
-            return nullptr;
-        }
-    } else {
-        unsigned long num_rows = mysql_num_rows(result);
-        unsigned int num_fields = mysql_num_fields(result);
-        logger_->info("Query returned {} rows, {} fields", num_rows, num_fields);
-        
-        if (num_rows == 0) {
-            logger_->warn("WARNING: Query returned 0 rows!");
-        }
-        
-        // Log field names for debugging
-        MYSQL_FIELD* fields = mysql_fetch_fields(result);
-        if (fields) {
-            logger_->debug("Field names: ");
-            for (unsigned int i = 0; i < num_fields; i++) {
-                logger_->debug("  {}: {}", i, fields[i].name ? fields[i].name : "NULL");
+            unsigned long num_rows = mysql_num_rows(result);
+            unsigned int num_fields = mysql_num_fields(result);
+            
+            if (logger_) {
+                std::ostringstream oss;
+                oss << std::this_thread::get_id();
+                logger_->info("Query returned {} rows, {} fields on thread {}", 
+                            num_rows, num_fields, oss.str());
+                
+                if (num_rows == 0) {
+                    logger_->warn("WARNING: Query returned 0 rows on thread {}!", oss.str());
+                }
+                
+                // Log field names for debugging
+                MYSQL_FIELD* fields = mysql_fetch_fields(result);
+                if (fields) {
+                    logger_->debug("Field names on thread {}: ", oss.str());
+                    for (unsigned int i = 0; i < num_fields; i++) {
+                        logger_->debug("  {}: {}", i, fields[i].name ? fields[i].name : "NULL");
+                    }
+                }
             }
         }
+        
+        if (logger_) {
+            std::ostringstream oss;
+            oss << std::this_thread::get_id();
+            logger_->info("=== SELECT QUERY COMPLETED SUCCESSFULLY ON THREAD {} ===", oss.str());
+        }
+        return result;
+        
+    } catch (const std::exception& e) {
+        if (logger_) {
+            std::ostringstream oss;
+            oss << std::this_thread::get_id();
+            logger_->error("Exception in executeSelectQuery on thread {}: {}", oss.str(), e.what());
+        }
+        return nullptr;
+    }
+}
+
+bool DatabaseManager::isConnected() {
+    try {
+        if (!thread_connection_) {
+            return false;
+        }
+        
+        // Use ping to test connection
+        int ping_result = mysql_ping(thread_connection_);
+        if (ping_result != 0) {
+            if (logger_) {
+                unsigned int error_code = mysql_errno(thread_connection_);
+                std::ostringstream oss;
+                oss << std::this_thread::get_id();
+                logger_->debug("Connection ping failed on thread {} with error code: {}, message: '{}'", 
+                             oss.str(), error_code, mysql_error(thread_connection_));
+            }
+            return false;
+        }
+        
+        return true;
+    } catch (const std::exception& e) {
+        if (logger_) {
+            std::ostringstream oss;
+            oss << std::this_thread::get_id();
+            logger_->error("Exception in isConnected on thread {}: {}", oss.str(), e.what());
+        }
+        return false;
+    }
+}
+
+void DatabaseManager::reconnect() {
+    if (logger_) {
+        std::ostringstream oss;
+        oss << std::this_thread::get_id();
+        logger_->info("Reconnecting database on thread {}...", oss.str());
     }
     
-    logger_->info("=== SELECT QUERY COMPLETED SUCCESSFULLY ===");
-    return result;
+    cleanupThreadConnection();
+    ensureThreadConnection();
 }
 
 void DatabaseManager::cleanup() {
-    if (connection_) {
-        mysql_close(connection_);
-        connection_ = nullptr;
+    try {
+        if (logger_) {
+            logger_->info("Cleaning up DatabaseManager...");
+        }
+        
+        // Clean up thread-local connection
+        cleanupThreadConnection();
+        
+        // Clean up all tracked connections
+        {
+            std::lock_guard<std::mutex> lock(connections_mutex_);
+            for (auto& [thread_id, conn] : active_connections_) {
+                if (conn) {
+                    mysql_close(conn);
+                }
+            }
+            active_connections_.clear();
+        }
+        
+        // Cleanup MySQL library
+        mysql_library_end();
+        
+        if (logger_) {
+            logger_->info("DatabaseManager cleanup completed");
+        }
+        
+    } catch (const std::exception& e) {
+        if (logger_) {
+            logger_->error("Error during DatabaseManager cleanup: {}", e.what());
+        }
     }
-    mysql_library_end();
 }
 
 #else
+
 mysqlx::Session& DatabaseManager::getSession() {
     ensureConnected();
     return *session_;
@@ -250,28 +428,8 @@ mysqlx::Schema DatabaseManager::getSchema() {
     ensureConnected();
     return session_->getSchema(database_name_);
 }
-#endif
 
 bool DatabaseManager::isConnected() {
-        std::lock_guard<std::recursive_mutex> lock(db_mutex_); // <--- Add lock
-
-#ifdef USE_MYSQL_C_API
-
-    if (!connection_) {
-        return false;
-    }
-    
-    // Use ping instead of a query to test connection
-    int ping_result = mysql_ping(connection_);
-    if (ping_result != 0) {
-        unsigned int error_code = mysql_errno(connection_);
-        logger_->debug("Connection ping failed with error code: {}, message: '{}'", 
-                      error_code, mysql_error(connection_));
-        return false;
-    }
-    
-    return true;
-#else
     if (!session_) return false;
     try {
         session_->sql("SELECT 1").execute();
@@ -279,56 +437,45 @@ bool DatabaseManager::isConnected() {
     } catch (const mysqlx::Error&) {
         return false;
     }
-#endif
 }
 
 void DatabaseManager::reconnect() {
-        std::lock_guard<std::recursive_mutex> lock(db_mutex_); // <--- Add lock
+    throw std::runtime_error("Reconnection not implemented for Connector/C++ version");
+}
 
-#ifdef USE_MYSQL_C_API
-    logger_->info("Reconnecting to database...");
-    connectToDatabase();
-#else
+void DatabaseManager::cleanup() {
     if (session_) {
         session_->close();
         session_.reset();
     }
-    throw std::runtime_error("Reconnection not implemented for Connector/C++ version");
-#endif
 }
 
+#endif
+
 void DatabaseManager::ensureConnected() {
-        std::lock_guard<std::recursive_mutex> lock(db_mutex_); // <--- Add lock for safety
-#ifdef USE_MYSQL_C_API
-    if (!connection_) {
+    if (!initialized_) {
         throw std::runtime_error("Database not initialized");
     }
-    
-    // Test connection and reconnect if needed
-    if (!isConnected()) {
-        logger_->warn("Database connection lost, attempting to reconnect...");
-        try {
-            reconnect();
-        } catch (const std::exception& e) {
-            throw std::runtime_error("Database connection lost and reconnection failed: " + std::string(e.what()));
-        }
-    }
+
+#ifdef USE_MYSQL_C_API
+    ensureThreadConnection();
 #else
     if (!session_) {
-        throw std::runtime_error("Database not initialized");
+        throw std::runtime_error("Database session not available");
     }
     
     try {
         session_->sql("SELECT 1").execute();
     } catch (const mysqlx::Error& err) {
-        logger_->warn("Database connection lost, attempting to reconnect...");
+        if (logger_) {
+            logger_->warn("Database connection lost, attempting to reconnect...");
+        }
         throw std::runtime_error("Database connection lost");
     }
 #endif
 }
 
 std::string DatabaseManager::generateProjectCode() {
-        std::lock_guard<std::recursive_mutex> lock(db_mutex_); // <--- Add lock
     auto now = std::chrono::system_clock::now();
     auto time_t = std::chrono::system_clock::to_time_t(now);
     
@@ -372,7 +519,9 @@ std::string DatabaseManager::generateProjectCode() {
         ss << std::setfill('0') << std::setw(3) << next_seq;
 #endif
     } catch (const std::exception& err) {
-        logger_->warn("Failed to generate sequential project code, using timestamp fallback: {}", err.what());
+        if (logger_) {
+            logger_->warn("Failed to generate sequential project code, using timestamp fallback: {}", err.what());
+        }
         auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
             now.time_since_epoch()).count();
         ss << std::setfill('0') << std::setw(3) << (ms % 1000);
@@ -381,4 +530,4 @@ std::string DatabaseManager::generateProjectCode() {
     return ss.str();
 }
 
-} // namespace aeronautical
+} // namespace aeronautic

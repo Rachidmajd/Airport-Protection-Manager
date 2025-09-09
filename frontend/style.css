@@ -172,12 +172,14 @@ body {
     border-right: 1px solid #e5e7eb;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow-y: auto; /* Add this */
+    height: calc(100vh - 60px); /* Ensure fixed height */
 }
 
 .panel {
     padding: 20px;
     border-bottom: 1px solid #e5e7eb;
+    flex-shrink: 0; /* Prevent panels from shrinking */
 }
 
 .panel:last-child {

@@ -510,11 +510,11 @@ std::vector<FlightProcedure> FlightProcedureRepository::findAll(const FlightProc
         auto& db = DatabaseManager::getInstance();
         
         // Test database connection first
-        if (!db.isConnected()) {
-            logger_->error("Database is not connected!");
-            return procedures;
-        }
-        logger_->debug("Database connection confirmed");
+        // if (!db.isConnected()) {
+        //     logger_->error("Database is not connected!");
+        //     return procedures;
+        // }
+        // logger_->debug("Database connection confirmed");
         
         // Build the query
         std::string query = "SELECT fp.id, fp.procedure_code, fp.name, fp.type, "

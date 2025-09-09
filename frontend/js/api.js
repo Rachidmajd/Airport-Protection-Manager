@@ -83,19 +83,21 @@ class ApiClient {
                 queryParams.append('country', filters.country);
             }
             if (filters.bounds) {
-                queryParams.append('min_lat', filters.bounds.min_lat);
-                queryParams.append('max_lat', filters.bounds.max_lat);
-                queryParams.append('min_lng', filters.bounds.min_lng);
-                queryParams.append('max_lng', filters.bounds.max_lng);
+                // queryParams.append('min_lat', filters.bounds.min_lat);
+                // queryParams.append('max_lat', filters.bounds.max_lat);
+                // queryParams.append('min_lng', filters.bounds.min_lng);
+                // queryParams.append('max_lng', filters.bounds.max_lng);
             }
             if (filters.limit) {
                 queryParams.append('limit', filters.limit);
             }
             
-            const endpoint = filters.bounds ? 
-                `/airports/bounds${queryParams.toString() ? '?' + queryParams.toString() : ''}` :
-                `/airports${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+            // const endpoint = filters.bounds ? 
+            //     `/airports/bounds${queryParams.toString() ? '?' + queryParams.toString() : ''}` :
+            //     `/airports${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
             
+                const endpoint =                 `/airports${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+
             const response = await this.request(endpoint);
             
             const airports = response.data || response;
