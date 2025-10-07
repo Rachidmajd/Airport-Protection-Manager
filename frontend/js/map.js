@@ -11,7 +11,8 @@ class MapManager {
             droneZones: L.layerGroup(),
             conflicts: L.layerGroup(),
             airports: L.layerGroup(),      
-            runways: L.layerGroup()
+            runways: L.layerGroup(),
+            waypoints: L.layerGroup()
         };
         this.drawControl = null;
         this.drawnItems = new L.FeatureGroup();
@@ -19,6 +20,7 @@ class MapManager {
         this.procedures = [];
         this.airports = [];               
         this.runways = {};  
+        this.waypoints = []; 
         this.droneZones = [];
         this.conflicts = [];
         this.currentDrawer = null;
@@ -46,7 +48,8 @@ class MapManager {
         // Add layer groups to map in correct order
         this.map.addLayer(this.layers.airports);
         this.map.addLayer(this.layers.runways);
-        this.map.addLayer(this.layers.procedures);
+        this.map.addLayer(this.layers.procedures);        
+        this.map.addLayer(this.layers.waypoints);
         this.map.addLayer(this.layers.droneZones);
         this.map.addLayer(this.layers.conflicts);
         this.map.addLayer(this.drawnItems);
@@ -501,7 +504,8 @@ class MapManager {
             // Create sample data since backend isn't ready
             await Promise.all([ 
                 this.loadProceduresFromDatabase(),
-                this.loadAirportsFromDatabase()]);
+                this.loadAirportsFromDatabase(),
+                this.loadWaypointsFromDatabase()]);
             
             this.droneZones = [];
             this.conflicts = [];
@@ -509,6 +513,7 @@ class MapManager {
             // Render all data
             this.renderAirports();
             this.renderProcedures();
+            this.renderWaypoints();
             this.renderDroneZones();
             this.renderConflicts();
 
@@ -516,6 +521,223 @@ class MapManager {
         } catch (error) {
             console.error('❌ Failed to load map data:', error);
         }
+    }
+
+    async loadWaypointsFromDatabase() {
+        try {
+            console.log('🎯 Loading waypoints from database...');
+            
+            const waypoints = await apiClient.getWaypoints();
+            
+            // Check data source
+            const dataSource = apiClient.getDataSource();
+            console.log(`📊 Loaded ${waypoints.length} waypoints from ${dataSource}`);
+            
+            // Store waypoints
+            this.waypoints = waypoints;
+            
+            // Log waypoint details
+            waypoints.forEach(waypoint => {
+                console.log(`🎯 Loaded waypoint: ${waypoint.waypoint_code} - ${waypoint.name} (${waypoint.waypoint_type})`);
+            });
+            
+            // Update UI if available
+            if (window.renderWaypointControls) {
+                window.renderWaypointControls(this.waypoints);
+            }
+            
+        } catch (error) {
+            console.error('❌ Failed to load waypoints from database:', error);
+            
+            // Fallback to empty array
+            console.log('🔄 Using empty waypoints array...');
+            this.waypoints = [];
+        }
+    }
+
+    renderWaypoints() {
+        console.log('🎯 Rendering waypoints on map:', this.waypoints.length);
+        this.layers.waypoints.clearLayers();
+
+        if (!this.waypoints || this.waypoints.length === 0) {
+            console.warn('⚠️ No waypoints to render');
+            return;
+        }
+
+        this.waypoints.forEach(waypoint => {
+            if (waypoint.isVisible === false) {
+                console.log(`👁️ Skipping hidden waypoint: ${waypoint.waypoint_code}`);
+                return;
+            }
+            
+            try {
+                console.log(`🎨 Rendering waypoint: ${waypoint.waypoint_code}`);
+                this.renderWaypoint(waypoint);
+            } catch (error) {
+                console.error(`❌ Error rendering waypoint ${waypoint.waypoint_code}:`, error);
+            }
+        });
+        
+        console.log('✅ Waypoints rendered on map');
+    }
+
+    renderWaypoint(waypoint) {
+        try {
+            const waypointIcon = this.createWaypointIcon(waypoint);
+            
+            const marker = L.marker([waypoint.latitude, waypoint.longitude], {
+                icon: waypointIcon
+            });
+            
+            // Add simple tooltip
+            const tooltipContent = `
+                <div style="font-weight: 600; margin-bottom: 4px;">${waypoint.waypoint_code}</div>
+                <div style="font-size: 12px; color: #6b7280;">
+                    ${waypoint.name}<br>
+                    ${waypoint.waypoint_type} | ${waypoint.usage_type}
+                </div>
+            `;
+            
+            marker.bindTooltip(tooltipContent, {
+                permanent: false,
+                direction: 'top',
+                className: 'waypoint-tooltip'
+            });
+            
+            // Store waypoint reference in marker
+            marker._waypoint = waypoint;
+
+            this.layers.waypoints.addLayer(marker);
+            console.log(`✅ Rendered waypoint ${waypoint.waypoint_code}`);
+            
+        } catch (error) {
+            console.error(`❌ Error rendering waypoint ${waypoint.waypoint_code}:`, error);
+        }
+    }
+
+    createWaypointIcon(waypoint) {
+        let iconHtml, iconSize, bgColor, symbol;
+        
+        // Determine icon based on waypoint type and usage
+        switch (waypoint.waypoint_type) {
+            case 'FIX':
+                symbol = '⬥';
+                bgColor = '#8b5cf6'; // Purple for fixes
+                iconSize = [16, 16];
+                break;
+            case 'VOR':
+                symbol = '◎';
+                bgColor = '#3b82f6'; // Blue for VOR
+                iconSize = [18, 18];
+                break;
+            case 'DME':
+                symbol = '◉';
+                bgColor = '#10b981'; // Green for DME
+                iconSize = [16, 16];
+                break;
+            case 'NDB':
+                symbol = '◆';
+                bgColor = '#f59e0b'; // Orange for NDB
+                iconSize = [16, 16];
+                break;
+            case 'VRP':
+                symbol = '▲';
+                bgColor = '#ef4444'; // Red for VRP
+                iconSize = [14, 14];
+                break;
+            case 'TACAN':
+                symbol = '◈';
+                bgColor = '#06b6d4'; // Cyan for TACAN
+                iconSize = [16, 16];
+                break;
+            default:
+                symbol = '●';
+                bgColor = '#6b7280'; // Gray for unknown
+                iconSize = [12, 12];
+        }
+        
+        iconHtml = `<div style="
+            background: ${bgColor}; 
+            color: white; 
+            width: ${iconSize[0]}px; 
+            height: ${iconSize[1]}px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: ${iconSize[0] - 4}px; 
+            font-weight: bold;
+            border: 2px solid white;
+            border-radius: 2px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        ">${symbol}</div>`;
+        
+        return L.divIcon({
+            html: iconHtml,
+            iconSize: iconSize,
+            iconAnchor: [iconSize[0]/2, iconSize[1]/2],
+            popupAnchor: [0, -iconSize[1]/2],
+            className: 'waypoint-icon'
+        });
+    }
+
+    toggleWaypointVisibility(visible) {
+        console.log(`👁️ Toggling waypoint visibility: ${visible}`);
+        
+        this.waypoints.forEach(waypoint => {
+            waypoint.isVisible = visible;
+        });
+        
+        this.renderWaypoints();
+        
+        // Update waypoint controls if available
+        if (window.renderWaypointControls) {
+            window.renderWaypointControls(this.waypoints);
+        }
+    }
+
+    getWaypointStats() {
+        const stats = {
+            total: this.waypoints.length,
+            visible: this.waypoints.filter(w => w.isVisible !== false).length,
+            byType: {},
+            byUsage: {},
+            fromDatabase: apiClient.isUsingDatabase()
+        };
+        
+        this.waypoints.forEach(waypoint => {
+            // Count by type
+            if (!stats.byType[waypoint.waypoint_type]) {
+                stats.byType[waypoint.waypoint_type] = 0;
+            }
+            stats.byType[waypoint.waypoint_type]++;
+            
+            // Count by usage
+            if (!stats.byUsage[waypoint.usage_type]) {
+                stats.byUsage[waypoint.usage_type] = 0;
+            }
+            stats.byUsage[waypoint.usage_type]++;
+        });
+        
+        return stats;
+    }
+
+    debugWaypoints() {
+        console.log('🐛 Waypoint Debug Information:');
+        console.log('Total waypoints:', this.waypoints.length);
+        console.log('Data source:', apiClient.getDataSource());
+        console.log('Waypoints:', this.waypoints);
+        
+        this.waypoints.forEach(waypoint => {
+            console.log(`📋 ${waypoint.waypoint_code}:`);
+            console.log(`  - Name: ${waypoint.name}`);
+            console.log(`  - Type: ${waypoint.waypoint_type}`);
+            console.log(`  - Usage: ${waypoint.usage_type}`);
+            console.log(`  - Visible: ${waypoint.isVisible !== false}`);
+            console.log(`  - Location: ${waypoint.latitude}, ${waypoint.longitude}`);
+        });
+        
+        const stats = this.getWaypointStats();
+        console.log('📊 Waypoint Statistics:', stats);
     }
 
     async loadAirportsFromDatabase() {

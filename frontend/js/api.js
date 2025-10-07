@@ -1277,6 +1277,155 @@ getMockProcedures() {
             return { type: "FeatureCollection", features: [] };
         }
     }
+
+
+    async getWaypoints(filters = {}) {
+        console.log('🎯 Fetching waypoints...');
+        
+        try {
+            console.log('🔄 Attempting to fetch waypoints from database...');
+            
+            const queryParams = new URLSearchParams();
+            
+            if (filters.type) {
+                queryParams.append('type', filters.type);
+            }
+            if (filters.usage_type) {
+                queryParams.append('usage_type', filters.usage_type);
+            }
+            if (filters.active_only !== undefined) {
+                queryParams.append('active_only', filters.active_only);
+            }
+            if (filters.country) {
+                queryParams.append('country', filters.country);
+            }
+            if (filters.limit) {
+                queryParams.append('limit', filters.limit);
+            }
+            
+            const endpoint = `/waypoints${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+
+            const response = await this.request(endpoint);
+            
+            const waypoints = response.data || response;
+            this.dataSource = 'database';
+            
+            console.log(`✅ Successfully fetched ${waypoints.length} waypoints from DATABASE`);
+            
+            // Process waypoints for map display
+            const processedWaypoints = this.processWaypointsForMap(waypoints);
+            
+            processedWaypoints._metadata = {
+                source: 'database',
+                timestamp: new Date().toISOString(),
+                count: waypoints.length
+            };
+            
+            return processedWaypoints;
+            
+        } catch (error) {
+            console.warn(`⚠️ Database fetch failed for waypoints: ${error.message}`);
+            
+            console.log('🔄 Falling back to mock waypoints...');
+            this.dataSource = 'mock';
+            
+            const mockWaypoints = this.getMockWaypoints();
+            
+            mockWaypoints._metadata = {
+                source: 'mock',
+                timestamp: new Date().toISOString(),
+                count: mockWaypoints.length,
+                reason: error.message
+            };
+            
+            console.log('⚠️ Using mock waypoints due to database connection failure');
+            return mockWaypoints;
+        }
+    }
+
+    // Process waypoints for map display
+    processWaypointsForMap(waypoints) {
+        console.log('🗺️ Processing waypoints for map display...');
+        
+        const processedWaypoints = waypoints.map(waypoint => ({
+            id: waypoint.id,
+            waypoint_code: waypoint.waypoint_code,
+            name: waypoint.name,
+            latitude: waypoint.latitude,
+            longitude: waypoint.longitude,
+            elevation_ft: waypoint.elevation_ft,
+            waypoint_type: waypoint.waypoint_type,
+            usage_type: waypoint.usage_type,
+            country_code: waypoint.country_code,
+            country_name: waypoint.country_name,
+            region: waypoint.region,
+            frequency: waypoint.frequency,
+            is_active: waypoint.is_active,
+            isVisible: true // Default to visible
+        }));
+        
+        console.log(`✅ Processed ${processedWaypoints.length} waypoints for map`);
+        return processedWaypoints;
+    }
+
+    // Mock waypoints data for testing
+    getMockWaypoints() {
+        console.log('🧪 Generating mock waypoints...');
+        
+        const mockWaypoints = [
+            {
+                id: 1,
+                waypoint_code: 'MOCK1',
+                name: '[MOCK] Test Fix 1',
+                latitude: 31.606701,
+                longitude: -8.034632,
+                elevation_ft: 500,
+                waypoint_type: 'FIX',
+                usage_type: 'ENROUTE',
+                country_code: 'MA',
+                country_name: 'Morocco',
+                region: 'GMMM FIR',
+                frequency: '',
+                is_active: true,
+                isVisible: true
+            },
+            {
+                id: 2,
+                waypoint_code: 'MOCK2',
+                name: '[MOCK] Test VOR',
+                latitude: 31.656701,
+                longitude: -8.084632,
+                elevation_ft: 300,
+                waypoint_type: 'VOR',
+                usage_type: 'TERMINAL',
+                country_code: 'MA',
+                country_name: 'Morocco',
+                region: 'GMMM FIR',
+                frequency: '114.70',
+                is_active: true,
+                isVisible: true
+            },
+            {
+                id: 3,
+                waypoint_code: 'MOCK3',
+                name: '[MOCK] Test VRP',
+                latitude: 31.556701,
+                longitude: -8.134632,
+                elevation_ft: 0,
+                waypoint_type: 'VRP',
+                usage_type: 'VFR',
+                country_code: 'MA',
+                country_name: 'Morocco',
+                region: 'GMMM FIR',
+                frequency: '',
+                is_active: true,
+                isVisible: true
+            }
+        ];
+        
+        console.log(`🧪 Generated ${mockWaypoints.length} mock waypoints`);
+        return mockWaypoints;
+    }
     
 }
 

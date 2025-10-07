@@ -40,7 +40,72 @@ class CoordinateEntryManager {
         // Use a more direct approach - wait for DOM to be ready
         setTimeout(() => {
             this.attachEventHandlers();
+            this.setupAltitudeUnitToggle();
         }, 100);
+    }
+    setupAltitudeUnitToggle() {
+        const toggleBtns = document.querySelectorAll('#coordinate-entry-modal .altitude-unit-toggle');
+        
+        toggleBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                this.toggleAltitudeUnit();
+            });
+        });
+    }
+
+    toggleAltitudeUnit() {
+        const labels = document.querySelectorAll('#coordinate-entry-modal .altitude-unit-label');
+        const minInput = document.getElementById('coord-altitude-min');
+        const maxInput = document.getElementById('coord-altitude-max');
+        
+        if (!minInput || !maxInput) return;
+        
+        // Get current unit
+        const currentUnit = labels[0]?.textContent || 'ft AGL';
+        const isFeet = currentUnit.includes('ft');
+        const newUnit = isFeet ? 'm AGL' : 'ft AGL';
+        
+        // Convert values
+        if (minInput.value) {
+            const oldValue = parseFloat(minInput.value);
+            const newValue = isFeet ? 
+                Math.round(oldValue * 0.3048) :  // feet to meters
+                Math.round(oldValue * 3.28084);  // meters to feet
+            minInput.value = newValue;
+        }
+        
+        if (maxInput.value) {
+            const oldValue = parseFloat(maxInput.value);
+            const newValue = isFeet ? 
+                Math.round(oldValue * 0.3048) :  // feet to meters
+                Math.round(oldValue * 3.28084);  // meters to feet
+            maxInput.value = newValue;
+        }
+        
+        // Update max attribute
+        minInput.max = isFeet ? '122' : '400'; // 400ft = ~122m
+        maxInput.max = isFeet ? '122' : '400';
+        
+        // Update min attribute to maintain reasonable minimums
+        minInput.min = isFeet ? '0' : '0';
+        maxInput.min = isFeet ? '0' : '0';
+        
+        // Update step
+        minInput.step = isFeet ? '5' : '10';
+        maxInput.step = isFeet ? '5' : '10';
+        
+        // Update all labels
+        labels.forEach(label => {
+            label.textContent = newUnit;
+        });
+        
+        // Update button text
+        const toggleBtns = document.querySelectorAll('#coordinate-entry-modal .altitude-unit-toggle');
+        toggleBtns.forEach(btn => {
+            btn.textContent = `↔️ Switch`;
+        });
+        
+        this.showNotification(`Altitude unit changed to ${isFeet ? 'meters' : 'feet'}`, 'info');
     }
 
     attachEventHandlers() {

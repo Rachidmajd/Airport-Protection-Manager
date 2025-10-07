@@ -13,6 +13,7 @@ class UIManager {
         this.activeProject = null;
         this.projects = [];
         this.imageEditor = null;
+        this.altitudeUnit = 'feet';
     }
 
     async init() {
@@ -50,6 +51,10 @@ class UIManager {
             console.log('🔄 UIManager: Setting up Report UI...');
             this.setupReportModalHandlers();
             console.log('✅ UIManager: Report UI set up');
+
+            console.log('🔄 UIManager: Setting up altitude unit toggle...');
+            this.setupAltitudeUnitToggle();
+            console.log('✅ UIManager: Altitude unit toggle set up');
 
             
             console.log('✅ UIManager: Initialization complete');
@@ -1168,8 +1173,16 @@ class UIManager {
     showProjectCreateModal() {
         const modal = document.getElementById('project-editor-modal');
         if (modal) {
+            // Reset form first
             document.getElementById('project-editor-form').reset();
-            document.getElementById('project-editor-title').textContent = 'Create New Project';
+            
+            // Set default times AFTER reset
+            this.setDefaultFormTimes();
+            
+            // Update title
+            document.getElementById('project-editor-title').textContent = '📋 Create New Project';
+            
+            // Show modal
             modal.classList.remove('hidden');
             modal.setAttribute('aria-hidden', 'false');
             modal.style.display = 'flex';
@@ -1425,65 +1438,151 @@ handleAirportSelection(airport) {
     clearFieldError(fieldId) {}
     clearAllFieldErrors() {}
 
-    setDefaultFormTimes() {
-        const startTimeField = document.getElementById('start-time');
-        const endTimeField = document.getElementById('end-time');
+setDefaultFormTimes() {
+    // Set defaults for Drone Zone Form
+    const startTimeField = document.getElementById('start-time');
+    const endTimeField = document.getElementById('end-time');
+    
+    if (startTimeField && endTimeField) {
+        const today = new Date();
         
-        if (startTimeField && endTimeField) {
-            const now = new Date();
-            const startTime = new Date(now.getTime() + 60 * 60 * 1000);
-            const endTime = new Date(startTime.getTime() + 2 * 60 * 60 * 1000);
+        // Set start time to 00:00 today
+        const startTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0);
+        
+        // Set end time to 21:59 today
+        const endTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 21, 59);
 
-            startTimeField.value = this.formatDateTimeLocal(startTime);
-            endTimeField.value = this.formatDateTimeLocal(endTime);
-        }
+        startTimeField.value = this.formatDateTimeLocal(startTime);
+        endTimeField.value = this.formatDateTimeLocal(endTime);
     }
+    
+    // Set defaults for Project Editor Form
+    const projectStartField = document.getElementById('project-start-date');
+    const projectEndField = document.getElementById('project-end-date');
+    
+    if (projectStartField && projectEndField) {
+        const today = new Date();
+        
+        // Set start time to 00:00 today
+        const startTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0);
+        
+        // Set end time to 21:59 today
+        const endTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 21, 59);
+
+        projectStartField.value = this.formatDateTimeLocal(startTime);
+        projectEndField.value = this.formatDateTimeLocal(endTime);
+    }
+}
+
+    convertAltitude(value, fromUnit, toUnit) {
+        if (fromUnit === toUnit) return value;
+        
+        if (fromUnit === 'feet' && toUnit === 'meters') {
+            return Math.round(value * 0.3048);
+        } else if (fromUnit === 'meters' && toUnit === 'feet') {
+            return Math.round(value * 3.28084);
+        }
+        return value;
+    }
+
+     toggleAltitudeUnit() {
+        const newUnit = this.altitudeUnit === 'feet' ? 'meters' : 'feet';
+        
+        // Convert all altitude inputs
+        const altitudeInputs = document.querySelectorAll('[id*="altitude"]');
+        altitudeInputs.forEach(input => {
+            if (input.value) {
+                const oldValue = parseFloat(input.value);
+                const newValue = this.convertAltitude(oldValue, this.altitudeUnit, newUnit);
+                input.value = newValue;
+                
+                // Update max values
+                if (this.altitudeUnit === 'feet' && newUnit === 'meters') {
+                    input.max = 122; // 400 feet = ~122 meters
+                } else if (this.altitudeUnit === 'meters' && newUnit === 'feet') {
+                    input.max = 400;
+                }
+            }
+        });
+        
+        // Update unit in form data
+        this.altitudeUnit = newUnit;
+        
+        // Update all unit labels
+        document.querySelectorAll('.altitude-unit-label').forEach(label => {
+            label.textContent = newUnit === 'feet' ? 'ft AGL' : 'm AGL';
+        });
+        
+        showNotification(`Altitude unit changed to ${newUnit}`, 'info');
+    }
+
+    setupAltitudeUnitToggle() {
+        // Add event listener to unit toggle buttons
+        document.querySelectorAll('.altitude-unit-toggle').forEach(btn => {
+            btn.addEventListener('click', () => this.toggleAltitudeUnit());
+        });
+    }
+
 
     formatDateTimeLocal(date) {
         const pad = (num) => num.toString().padStart(2, '0');
         return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
     }
 
-    showDroneZoneForm(geometry, callback, existingData = null) {
-        this.currentFormCallback = callback;
-        const modal = document.getElementById('drone-form-modal');
-        if (!modal) return;
-        
-        // Check if it's a point geometry
-        const isPoint = geometry.geometry.type === 'Point';
-        const pointRadiusGroup = document.getElementById('point-radius-group');
-        
-        if (pointRadiusGroup) {
-            if (isPoint) {
-                pointRadiusGroup.classList.remove('hidden');
-            } else {
-                pointRadiusGroup.classList.add('hidden');
-            }
-        }
-        
-        // Set default values or existing data
-        if (existingData) {
-            // ... existing code for editing ...
+ showDroneZoneForm(geometry, callback, existingData = null) {
+    this.currentFormCallback = callback;
+    const modal = document.getElementById('drone-form-modal');
+    if (!modal) return;
+    
+    // Check if it's a point geometry
+    const isPoint = geometry.geometry.type === 'Point';
+    const pointRadiusGroup = document.getElementById('point-radius-group');
+    
+    if (pointRadiusGroup) {
+        if (isPoint) {
+            pointRadiusGroup.classList.remove('hidden');
         } else {
-            this.setDefaultFormTimes();
-            this.clearAllFieldErrors();
-            
-            const timestamp = new Date().toISOString().slice(0, 16).replace(/[-:]/g, '').replace('T', '-');
-            const operationIdField = document.getElementById('operation-id');
-            if (operationIdField) {
-                const prefix = isPoint ? 'POINT' : 'DRONE';
-                operationIdField.value = `${prefix}-${timestamp}`;
-            }
+            pointRadiusGroup.classList.add('hidden');
         }
-        
-        modal.classList.remove('hidden');
-        modal.style.display = 'flex';
-        
-        setTimeout(() => {
-            const firstInput = document.getElementById('operation-id');
-            if (firstInput) firstInput.focus();
-        }, 100);
     }
+    
+    // Set default values or existing data
+    if (existingData) {
+        // Populate form with existing data
+        document.getElementById('operation-id').value = existingData.operationId || '';
+        document.getElementById('altitude-min').value = existingData.altitudeRange?.min || 0;
+        document.getElementById('altitude-max').value = existingData.altitudeRange?.max || 400;
+        document.getElementById('start-time').value = existingData.startTime || '';
+        document.getElementById('end-time').value = existingData.endTime || '';
+        document.getElementById('status').value = existingData.status || 'Planned';
+        
+        if (isPoint && existingData.pointRadius) {
+            document.getElementById('point-radius').value = existingData.pointRadius;
+        }
+    } else {
+        // Set default times for new zone
+        this.setDefaultFormTimes();
+        
+        // Clear any errors
+        this.clearAllFieldErrors();
+        
+        // Generate operation ID
+        const timestamp = new Date().toISOString().slice(0, 16).replace(/[-:]/g, '').replace('T', '-');
+        const operationIdField = document.getElementById('operation-id');
+        if (operationIdField) {
+            const prefix = isPoint ? 'POINT' : 'DRONE';
+            operationIdField.value = `${prefix}-${timestamp}`;
+        }
+    }
+    
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+    
+    setTimeout(() => {
+        const firstInput = document.getElementById('operation-id');
+        if (firstInput) firstInput.focus();
+    }, 100);
+}
 
     hideDroneZoneForm() {
         const modal = document.getElementById('drone-form-modal');
@@ -2119,153 +2218,649 @@ showReportModal(reportData, project) {
 
     if (!reportBody || !modal) return;
 
-    // --- Helper function to create the report HTML ---
     const createReportHTML = (data, proj) => {
         const conflicts = data.conflicts || [];
         const hasConflicts = conflicts.length > 0;
+        const reportDate = new Date().toLocaleString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
 
-        // Date formatting
         const formatDate = (dateString) => {
             if (!dateString) return 'N/A';
-            return new Date(dateString).toLocaleString();
+            return new Date(dateString).toLocaleString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
         };
 
-        // Helper to get procedure code from the ID
         const getProcedureCode = (procedureId) => {
             if (window.mapManager && window.mapManager.procedures) {
                 const procedure = window.mapManager.procedures.find(p => p.id === procedureId);
                 return procedure ? procedure.procedure_code : `ID: ${procedureId}`;
             }
-            return `ID: ${procedureId}`; // Fallback if mapManager is not ready
+            return `ID: ${procedureId}`;
         };
 
-        // Main report template
+        const getSeverityColor = (severity) => {
+            const colors = {
+                'high': '#dc2626',
+                'medium': '#f59e0b',
+                'low': '#10b981'
+            };
+            return colors[severity?.toLowerCase()] || '#6b7280';
+        };
+
         return `
-            <div class="report-container">
-                <div class="report-header">
-                    <h1>Preliminary Analysis Report</h1>
-                    <p><strong>Project:</strong> ${proj.title}</p>
+            <div class="report-document">
+                <!-- Header - appears on every printed page -->
+                <div class="report-header-page">
+                    <div class="report-header-content">
+                        <div class="report-logo">
+                            <img src="newlogo.png" alt="Company Logo" class="report-logo-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+                            <div class="logo-icon" style="display: none;">✈️</div>
+                            <div class="logo-text">
+                                <div class="company-name">Aeronautical Deconfliction Platform</div>
+                                <div class="company-tagline">Aviation Analysis & Conflict Resolution</div>
+                            </div>
+                        </div>
+                        <div class="report-meta">
+                            <div class="report-type">PRELIMINARY ANALYSIS REPORT</div>
+                            <div class="report-date">Generated: ${reportDate}</div>
+                        </div>
+                    </div>
+                    <div class="header-line"></div>
                 </div>
 
-                <div class="report-section">
-                    <h2>Project Details</h2>
-                    <table>
-                        <tr>
-                            <th>Project Code</th>
-                            <td>${proj.project_code}</td>
-                            <th>Status</th>
-                            <td><span class="status-badge ${proj.status.toLowerCase()}">${proj.status}</span></td>
-                        </tr>
-                        <tr>
-                            <th>Operation Type</th>
-                            <td>${proj.operation_type || 'N/A'}</td>
-                             <th>Priority</th>
-                            <td>${proj.priority || 'N/A'}</td>
-                        </tr>
-                        <tr>
-                            <th>Start Date</th>
-                            <td>${formatDate(proj.start_date)}</td>
-                             <th>End Date</th>
-                            <td>${formatDate(proj.end_date)}</td>
-                        </tr>
-                        <tr>
-                            <th>Min Altitude</th>
-                            <td>${proj.altitude_min ?? 'N/A'} ft AGL</td>
-                            <th>Max Altitude</th>
-                            <td>${proj.altitude_max ?? 'N/A'} ft AGL</td>
-                        </tr>
-                    </table>
+                <!-- Report Title Section -->
+                <div class="report-title-section">
+                    <h1 class="report-main-title">Project Analysis Report</h1>
+                    <h2 class="report-project-name">${proj.title}</h2>
+                    <div class="report-project-code">Project Code: ${proj.project_code}</div>
                 </div>
 
-                <div class="report-section">
-                    <h2>Conflict Analysis</h2>
-                    <div class="summary">
-                        <div class="summary-item ${hasConflicts ? 'conflicts' : 'no-conflicts'}">
-                            <span class="icon">${hasConflicts ? '⚠️' : '✅'}</span>
-                            <div>
-                                <strong>${conflicts.length} Conflicts Detected</strong>
-                                <p>${hasConflicts ? 'Review the details below.' : 'No direct conflicts with flight procedures.'}</p>
+                <!-- Executive Summary -->
+                <div class="report-section executive-summary">
+                    <h2 class="section-title">
+                        <span class="section-icon">📊</span>
+                        Executive Summary
+                    </h2>
+                    <div class="summary-grid">
+                        <div class="summary-card ${hasConflicts ? 'warning' : 'success'}">
+                            <div class="summary-icon">${hasConflicts ? '⚠️' : '✅'}</div>
+                            <div class="summary-content">
+                                <div class="summary-number">${conflicts.length}</div>
+                                <div class="summary-label">Conflicts Detected</div>
+                            </div>
+                        </div>
+                        <div class="summary-card info">
+                            <div class="summary-icon">🛩️</div>
+                            <div class="summary-content">
+                                <div class="summary-number">${proj.operation_type || 'Standard'}</div>
+                                <div class="summary-label">Operation Type</div>
+                            </div>
+                        </div>
+                        <div class="summary-card info">
+                            <div class="summary-icon">📅</div>
+                            <div class="summary-content">
+                                <div class="summary-number">${formatDate(proj.start_date).split(',')[0]}</div>
+                                <div class="summary-label">Start Date</div>
+                            </div>
+                        </div>
+                        <div class="summary-card priority-${proj.priority?.toLowerCase()}">
+                            <div class="summary-icon">🎯</div>
+                            <div class="summary-content">
+                                <div class="summary-number">${proj.priority || 'Normal'}</div>
+                                <div class="summary-label">Priority Level</div>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    ${hasConflicts ? `
-                    <table class="conflict-table">
-                        <thead>
-                            <tr>
-                                <th>Conflict ID</th>
-                                <th>Affected Procedure</th>
-                                <th>Conflict Type</th>
-                                <th>Severity</th>
-                                <th>Details</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${conflicts.map(conflict => `
-                                <tr>
-                                    <td>${conflict.id}</td>
-                                    <td><strong>${getProcedureCode(conflict.flight_procedure_id)}</strong></td>
-                                    <td><span class="badge ${conflict.type?.toLowerCase()}">${conflict.type || 'Unknown'}</span></td>
-                                    <td><span class="badge severity-${conflict.severity?.toLowerCase()}">${conflict.severity || 'N/A'}</span></td>
-                                    <td>${conflict.details || 'No additional details.'}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                    ` : ''}
+                <!-- Project Details -->
+                <div class="report-section">
+                    <h2 class="section-title">
+                        <span class="section-icon">📋</span>
+                        Project Information
+                    </h2>
+                    <div class="info-table">
+                        <div class="info-row">
+                            <div class="info-label">Project Code</div>
+                            <div class="info-value">${proj.project_code}</div>
+                            <div class="info-label">Status</div>
+                            <div class="info-value">
+                                <span class="status-badge status-${proj.status.toLowerCase().replace('_', '-')}">${proj.status}</span>
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Operation Type</div>
+                            <div class="info-value">${proj.operation_type || 'N/A'}</div>
+                            <div class="info-label">Priority</div>
+                            <div class="info-value">
+                                <span class="priority-badge priority-${proj.priority?.toLowerCase()}">${proj.priority || 'N/A'}</span>
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Start Date & Time</div>
+                            <div class="info-value">${formatDate(proj.start_date)}</div>
+                            <div class="info-label">End Date & Time</div>
+                            <div class="info-value">${formatDate(proj.end_date)}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Minimum Altitude</div>
+                            <div class="info-value">${proj.altitude_min ?? 'N/A'} ft AGL</div>
+                            <div class="info-label">Maximum Altitude</div>
+                            <div class="info-value">${proj.altitude_max ?? 'N/A'} ft AGL</div>
+                        </div>
+                        ${proj.description ? `
+                        <div class="info-row full-width">
+                            <div class="info-label">Description</div>
+                            <div class="info-value">${proj.description}</div>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+
+                <!-- Page Break -->
+                ${hasConflicts ? '<div class="page-break"></div>' : ''}
+
+                <!-- Conflict Analysis -->
+                <div class="report-section">
+                    <h2 class="section-title">
+                        <span class="section-icon">⚠️</span>
+                        Conflict Analysis
+                    </h2>
+                    
+                    ${!hasConflicts ? `
+                        <div class="no-conflicts-message">
+                            <div class="success-icon-large">✅</div>
+                            <h3>No Conflicts Detected</h3>
+                            <p>The proposed operation does not have any direct conflicts with existing flight procedures.</p>
+                            <p class="note">This preliminary analysis indicates that the operation can proceed subject to final approval and compliance with all aviation regulations.</p>
+                        </div>
+                    ` : `
+                        <div class="conflicts-overview">
+                            <p class="conflicts-intro">
+                                The following conflicts have been identified between the proposed operation 
+                                and existing flight procedures. Each conflict requires review and resolution 
+                                before the operation can be approved.
+                            </p>
+                        </div>
+
+                        <div class="conflict-table-container">
+                            <table class="conflict-table">
+                                <thead>
+                                    <tr>
+                                        <th width="8%">ID</th>
+                                        <th width="20%">Affected Procedure</th>
+                                        <th width="15%">Type</th>
+                                        <th width="12%">Severity</th>
+                                        <th width="45%">Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${conflicts.map((conflict, index) => `
+                                        <tr class="conflict-row severity-${conflict.severity?.toLowerCase()}">
+                                            <td class="conflict-id">#${String(index + 1).padStart(3, '0')}</td>
+                                            <td class="conflict-procedure">
+                                                <strong>${getProcedureCode(conflict.flight_procedure_id)}</strong>
+                                            </td>
+                                            <td class="conflict-type">
+                                                <span class="type-badge ${conflict.type?.toLowerCase()}">${conflict.type || 'Unknown'}</span>
+                                            </td>
+                                            <td class="conflict-severity">
+                                                <span class="severity-indicator" style="background: ${getSeverityColor(conflict.severity)}"></span>
+                                                <span class="severity-text">${conflict.severity || 'N/A'}</span>
+                                            </td>
+                                            <td class="conflict-details">${conflict.details || 'No additional details available.'}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Recommendations -->
+                        <div class="recommendations-section">
+                            <h3 class="recommendations-title">
+                                <span class="section-icon">💡</span>
+                                Recommendations
+                            </h3>
+                            <ul class="recommendations-list">
+                                <li>Review each identified conflict with the operations team</li>
+                                <li>Coordinate with air traffic control for conflict resolution</li>
+                                <li>Consider adjusting operation times to minimize conflicts</li>
+                                <li>Implement additional safety measures for high-severity conflicts</li>
+                                <li>Ensure all crew members are briefed on identified conflicts</li>
+                            </ul>
+                        </div>
+                    `}
+                </div>
+
+                <!-- Footer - appears on every printed page -->
+                <div class="report-footer-page">
+                    <div class="footer-line"></div>
+                    <div class="report-footer-content">
+                        <div class="footer-left">
+                            <div class="footer-company">Aeronautical Deconfliction Platform</div>
+                            <div class="footer-confidential">CONFIDENTIAL - For Official Use Only</div>
+                        </div>
+                        <div class="footer-right">
+                            <div class="footer-page">Page <span class="page-number"></span></div>
+                            <div class="footer-generated">Generated: ${new Date().toLocaleDateString()}</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         `;
     };
 
-    // --- Generate and inject the HTML ---
     reportBody.innerHTML = createReportHTML(reportData, project);
-
-    // --- Show the modal ---
     modal.classList.remove('hidden');
+    modal.style.display = 'flex';
 
-    // --- Add event listeners for close and print buttons ---
     const closeModalBtn = document.getElementById('close-report-btn');
     const printBtn = document.getElementById('print-report-btn');
 
     const closeHandler = () => {
         modal.classList.add('hidden');
+        modal.style.display = 'none';
         closeModalBtn.removeEventListener('click', closeHandler);
+        showApp(true);
     };
 
     const printHandler = () => {
         window.print();
     };
-    
+
     closeModalBtn.addEventListener('click', closeHandler);
     printBtn.addEventListener('click', printHandler);
 }
+    // This function handles closing the modal and printing
+    setupReportModalHandlers() {
+        const closeBtn = document.getElementById('close-report-btn');
+        const printBtn = document.getElementById('print-report-btn');
 
-// This function handles closing the modal and printing
-setupReportModalHandlers() {
-    const closeBtn = document.getElementById('close-report-btn');
-    const printBtn = document.getElementById('print-report-btn');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                const modal = document.getElementById('report-modal');
+                if (modal) {
+                    modal.classList.add('hidden');
+                    modal.style.display = 'none';
+                }
+                // Add this line to show the main app again
+                showApp(true); 
+            });
+        }
 
-    if (closeBtn) {
-        closeBtn.addEventListener('click', () => {
-            const modal = document.getElementById('report-modal');
-            if (modal) {
-                modal.classList.add('hidden');
-                modal.style.display = 'none';
+        if (printBtn) {
+            printBtn.addEventListener('click', () => {
+                window.print();
+            });
+        }
+    }
+
+renderWaypointControls(waypoints) {
+    console.log('🎯 Rendering waypoint controls for', waypoints.length, 'waypoints');
+    
+    // Find or create waypoint controls container
+    let container = document.getElementById('waypoint-controls');
+    
+    if (!container) {
+        // Create a new panel for waypoints
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar) {
+            const waypointPanel = document.createElement('div');
+            waypointPanel.className = 'panel';
+            waypointPanel.innerHTML = `
+                <h2 class="panel-title">
+                    Waypoints
+                    <span id="waypoint-count" class="conflict-count zero">0</span>
+                </h2>
+                <div id="waypoint-controls"></div>
+            `;
+            
+            // Insert after the airport panel (if it exists) or after procedures
+            const airportPanel = [...sidebar.querySelectorAll('.panel')].find(panel => 
+                panel.querySelector('#airport-controls')
+            );
+            
+            if (airportPanel && airportPanel.nextSibling) {
+                sidebar.insertBefore(waypointPanel, airportPanel.nextSibling);
+            } else {
+                const procedurePanel = sidebar.querySelector('.panel');
+                if (procedurePanel && procedurePanel.nextSibling) {
+                    sidebar.insertBefore(waypointPanel, procedurePanel.nextSibling);
+                } else {
+                    sidebar.appendChild(waypointPanel);
+                }
             }
-            // Add this line to show the main app again
-            showApp(true); 
-        });
+            
+            container = document.getElementById('waypoint-controls');
+        }
     }
-
-    if (printBtn) {
-        printBtn.addEventListener('click', () => {
-            window.print();
-        });
+    
+    if (!container) {
+        console.warn('⚠️ Waypoint controls container not found');
+        return;
     }
+    
+    // Update waypoint count
+    const countElement = document.getElementById('waypoint-count');
+    if (countElement) {
+        const visibleCount = waypoints.filter(w => w.isVisible !== false).length;
+        countElement.textContent = visibleCount;
+        countElement.className = `conflict-count ${visibleCount === 0 ? 'zero' : ''}`;
+    }
+    
+    // Clear existing controls
+    container.innerHTML = '';
+    
+    if (!waypoints || waypoints.length === 0) {
+        container.innerHTML = `
+            <div class="no-waypoints">
+                <p>🎯 Loading waypoints from database...</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Create waypoint controls
+    const waypointControls = this.createWaypointControls(waypoints);
+    container.appendChild(waypointControls);
+    
+    // Create statistics
+    const waypointStats = this.createWaypointStats(waypoints);
+    container.appendChild(waypointStats);
+    
+    console.log('✅ Waypoint controls rendered');
 }
 
+createWaypointControls(waypoints) {
+    const controlDiv = document.createElement('div');
+    controlDiv.className = 'waypoint-controls';
+    
+    // Data source indicator
+    const dataSource = window.apiClient ? window.apiClient.getDataSource() : 'unknown';
+    const sourceColor = dataSource === 'database' ? '#10b981' : '#f59e0b';
+    const sourceIcon = dataSource === 'database' ? '🗄️' : '🧪';
+    
+    controlDiv.innerHTML = `
+        <div class="filter-header">
+            <div class="data-source-indicator" style="
+                background: ${sourceColor}20; 
+                color: ${sourceColor}; 
+                padding: 4px 8px; 
+                border-radius: 6px; 
+                font-size: 11px; 
+                font-weight: 600;
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+                margin-bottom: 10px;
+            ">
+                ${sourceIcon} ${dataSource.toUpperCase()} DATA
+            </div>
+        </div>
+        
+        <div class="waypoint-visibility-controls" style="margin-bottom: 15px;">
+            <div class="visibility-toggle-container" style="
+                background: #f8fafc; 
+                border: 1px solid #e2e8f0;
+                border-radius: 8px; 
+                padding: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            ">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 16px;">🎯</span>
+                    <span style="font-weight: 500; color: #374151;">Show Waypoints</span>
+                </div>
+                <label class="toggle-switch" style="
+                    position: relative;
+                    display: inline-block;
+                    width: 48px;
+                    height: 24px;
+                ">
+                    <input type="checkbox" id="waypoint-visibility-toggle" checked style="
+                        opacity: 0;
+                        width: 0;
+                        height: 0;
+                    ">
+                    <span class="toggle-slider" style="
+                        position: absolute;
+                        cursor: pointer;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        bottom: 0;
+                        background-color: #10b981;
+                        transition: .4s;
+                        border-radius: 24px;
+                    "></span>
+                    <span class="toggle-button" style="
+                        position: absolute;
+                        content: '';
+                        height: 18px;
+                        width: 18px;
+                        left: 3px;
+                        bottom: 3px;
+                        background-color: white;
+                        transition: .4s;
+                        border-radius: 50%;
+                        transform: translateX(24px);
+                    "></span>
+                </label>
+            </div>
+            
+            <div style="font-size: 11px; color: #6b7280; margin-top: 8px; text-align: center;">
+                Toggle to show/hide all waypoints on the map
+            </div>
+        </div>
+    `;
+    
+    // Add event listener for visibility toggle
+    const toggle = controlDiv.querySelector('#waypoint-visibility-toggle');
+    const toggleButton = controlDiv.querySelector('.toggle-button');
+    const toggleSlider = controlDiv.querySelector('.toggle-slider');
+    
+    if (toggle) {
+        toggle.addEventListener('change', (e) => {
+            const isVisible = e.target.checked;
+            
+            // Update toggle appearance
+            if (isVisible) {
+                toggleButton.style.transform = 'translateX(24px)';
+                toggleSlider.style.backgroundColor = '#10b981';
+            } else {
+                toggleButton.style.transform = 'translateX(0)';
+                toggleSlider.style.backgroundColor = '#6b7280';
+            }
+            
+            // Update waypoint visibility
+            if (window.mapManager) {
+                window.mapManager.toggleWaypointVisibility(isVisible);
+            }
+        });
+    }
+    
+    return controlDiv;
+}
 
+createWaypointStats(waypoints) {
+    const statsDiv = document.createElement('div');
+    statsDiv.className = 'waypoint-stats';
+    
+    const visibleCount = waypoints.filter(w => w.isVisible !== false).length;
+    
+    // Count by type
+    const typeStats = {};
+    const usageStats = {};
+    
+    waypoints.forEach(w => {
+        if (!typeStats[w.waypoint_type]) typeStats[w.waypoint_type] = 0;
+        typeStats[w.waypoint_type]++;
+        
+        if (!usageStats[w.usage_type]) usageStats[w.usage_type] = 0;
+        usageStats[w.usage_type]++;
+    });
+    
+    statsDiv.innerHTML = `
+        <div class="stats-summary" style="
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+        ">
+            <div style="text-align: center; margin-bottom: 8px;">
+                <div style="font-size: 24px; font-weight: 700; color: #1e40af;">${visibleCount}</div>
+                <div style="font-size: 11px; color: #6b7280;">of ${waypoints.length} visible</div>
+            </div>
+            
+            <div style="
+                display: grid; 
+                grid-template-columns: 1fr 1fr; 
+                gap: 8px; 
+                font-size: 10px;
+                color: #6b7280;
+            ">
+                <div style="text-align: center;">
+                    <strong>${Object.keys(typeStats).length}</strong><br>
+                    Types
+                </div>
+                <div style="text-align: center;">
+                    <strong>${Object.keys(usageStats).length}</strong><br>
+                    Usage Categories
+                </div>
+            </div>
+        </div>
+        
+        <div class="type-breakdown" style="
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+        ">
+            <div style="font-weight: 600; font-size: 11px; color: #374151; margin-bottom: 8px;">
+                By Type:
+            </div>
+            ${Object.entries(typeStats).map(([type, count]) => `
+                <div style="
+                    display: flex; 
+                    justify-content: space-between; 
+                    align-items: center;
+                    font-size: 10px; 
+                    color: #6b7280; 
+                    margin-bottom: 4px;
+                    padding: 2px 0;
+                ">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span style="color: ${this.getWaypointTypeColor(type)};">
+                            ${this.getWaypointTypeSymbol(type)}
+                        </span>
+                        <span>${type}</span>
+                    </div>
+                    <span style="font-weight: 500;">${count}</span>
+                </div>
+            `).join('')}
+        </div>
+        
+        <div class="usage-breakdown" style="
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px;
+        ">
+            <div style="font-weight: 600; font-size: 11px; color: #374151; margin-bottom: 8px;">
+                By Usage:
+            </div>
+            ${Object.entries(usageStats).map(([usage, count]) => `
+                <div style="
+                    display: flex; 
+                    justify-content: space-between; 
+                    font-size: 10px; 
+                    color: #6b7280; 
+                    margin-bottom: 4px;
+                    padding: 2px 0;
+                ">
+                    <span>${usage}</span>
+                    <span style="font-weight: 500;">${count}</span>
+                </div>
+            `).join('')}
+        </div>
+    `;
+    
+    return statsDiv;
+}
+
+getWaypointTypeSymbol(type) {
+    const symbols = {
+        'FIX': '⬥',
+        'VOR': '◎',
+        'DME': '◉',
+        'NDB': '◆',
+        'VRP': '▲',
+        'TACAN': '◈'
+    };
+    return symbols[type] || '●';
+}
+
+getWaypointTypeColor(type) {
+    const colors = {
+        'FIX': '#8b5cf6',
+        'VOR': '#3b82f6',
+        'DME': '#10b981',
+        'NDB': '#f59e0b',
+        'VRP': '#ef4444',
+        'TACAN': '#06b6d4'
+    };
+    return colors[type] || '#6b7280';
+}
+
+async loadWaypointControls() {
+    try {
+        console.log('🎯 Loading waypoint controls...');
+        
+        // Wait for map to be initialized
+        let attempts = 0;
+        const maxAttempts = 20;
+        
+        while (attempts < maxAttempts) {
+            if (window.mapManager && window.mapManager.map && window.mapManager.waypoints) {
+                console.log('✅ Map and waypoints ready, rendering controls');
+                
+                // Get waypoint statistics
+                const stats = window.mapManager.getWaypointStats ? window.mapManager.getWaypointStats() : null;
+                if (stats) {
+                    console.log('📊 Waypoint statistics:', stats);
+                }
+                
+                // Render waypoint controls
+                this.renderWaypointControls(window.mapManager.waypoints);
+                return;
+            }
+            
+            console.log(`⏳ Waiting for waypoints... attempt ${attempts + 1}/${maxAttempts}`);
+            await new Promise(resolve => setTimeout(resolve, 500));
+            attempts++;
+        }
+        
+        console.log('⚠️ Waypoints not loaded after waiting, using empty list');
+        this.renderWaypointControls([]);
+        
+    } catch (error) {
+        console.error('❌ Failed to load waypoint controls:', error);
+        this.renderWaypointControls([]);
+    }
+}
 
 
 }
@@ -2285,6 +2880,8 @@ export function showApp(show = true) { uiManager.showApp(show); }
 export function updateProjectBar(project) { uiManager.updateProjectBar(project); }
 export function renderProjectList(projects) { uiManager.renderProjectList(projects); }
 export function hideProjectListModal() { uiManager.hideProjectListModal(); }
-
+export function renderWaypointControls(waypoints) { 
+    uiManager.renderWaypointControls(waypoints); 
+}
 window.uiManager = uiManager;
 export default uiManager;

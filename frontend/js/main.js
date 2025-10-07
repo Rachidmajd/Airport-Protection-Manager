@@ -116,11 +116,16 @@ async refreshAllData() {
             refreshPromises.push(mapManager.loadAirportsFromDatabase());
         }
 
+        if (mapManager.loadWaypointsFromDatabase) {
+            refreshPromises.push(mapManager.loadWaypointsFromDatabase());
+        }
+
         await Promise.all(refreshPromises);
         
         // Refresh procedure controls
         await this.loadProcedureControls();
         await this.loadAirportControls(); 
+        await this.loadWaypointControls();
         
         showNotification('All data refreshed successfully', 'success');
         console.log('✅ All data refresh complete');
@@ -130,6 +135,43 @@ async refreshAllData() {
         showNotification('Failed to refresh some data', 'warning');
     }
 }
+
+    async loadWaypointControls() {
+        try {
+            console.log('🎯 Loading waypoint controls...');
+            
+            // Wait for map to be initialized
+            let attempts = 0;
+            const maxAttempts = 20;
+            
+            while (attempts < maxAttempts) {
+                if (mapManager.map && mapManager.waypoints) {
+                    console.log('✅ Map and waypoints ready, rendering controls');
+                    
+                    // Get waypoint statistics
+                    const stats = mapManager.getWaypointStats ? mapManager.getWaypointStats() : null;
+                    if (stats) {
+                        console.log('📊 Waypoint statistics:', stats);
+                    }
+                    
+                    // Render waypoint controls
+                    uiManager.renderWaypointControls(mapManager.waypoints);
+                    return;
+                }
+                
+                console.log(`⏳ Waiting for waypoints... attempt ${attempts + 1}/${maxAttempts}`);
+                await new Promise(resolve => setTimeout(resolve, 500));
+                attempts++;
+            }
+            
+            console.log('⚠️ Waypoints not loaded after waiting, using empty list');
+            uiManager.renderWaypointControls([]);
+            
+        } catch (error) {
+            console.error('❌ Failed to load waypoint controls:', error);
+            uiManager.renderWaypointControls([]);
+        }
+    }
 
     // Add this method to the initializeAuthenticatedApp function
     async initializeAuthenticatedApp() {
@@ -170,6 +212,7 @@ async refreshAllData() {
             setTimeout(async () => {
                 await this.loadProcedureControls();
                 await this.loadAirportControls();
+                await this.loadWaypointControls();
             }, 2000);
 
             // Initialize project bar
@@ -202,6 +245,7 @@ debugApplicationState() {
         console.log('🗺️ Map Manager:');
         console.log('  - Map initialized:', !!window.mapManager.map);
         console.log('  - Procedures loaded:', window.mapManager.procedures?.length || 0);
+        console.log('  - Waypoints loaded:', window.mapManager.waypoints?.length || 0);
         console.log('  - Drone zones:', window.mapManager.droneZones?.length || 0);
         
         if (window.mapManager.getProcedureStats) {
@@ -213,6 +257,11 @@ debugApplicationState() {
             const airportStats = window.mapManager.getAirportStats();
             console.log('  - Airport stats:', airportStats);
         }
+
+        if (window.mapManager.getWaypointStats) {
+            const waypointStats = window.mapManager.getWaypointStats();
+            console.log('  - Waypoint stats:', waypointStats);
+        }
     }
     
     // Check projects
@@ -223,6 +272,8 @@ debugApplicationState() {
     // Check UI state
     console.log('🖼️ UI State:');
     const procedureControls = document.getElementById('procedure-controls');
+    const airportControls = document.getElementById('airport-controls');
+    const waypointControls = document.getElementById('waypoint-controls');
     console.log('  - Procedure controls:', !!procedureControls);
     if (procedureControls) {
         console.log('  - Control content length:', procedureControls.innerHTML.length);
@@ -260,15 +311,19 @@ debugApplicationState() {
                     const procedures = await window.apiClient.getProcedures();
                     console.log('Procedures:', procedures.length, 'loaded');
                     
-                    // NEW: Test airport API
                     const airports = await window.apiClient.getAirports();
                     console.log('Airports:', airports.length, 'loaded');
                     
+                    const waypoints = await window.apiClient.getWaypoints();
+                    console.log('Waypoints:', waypoints.length, 'loaded');
+                
+
                     return { 
                         health, 
                         projects: projects.length, 
                         procedures: procedures.length,
-                        airports: airports.length  // NEW
+                        airports: airports.length,
+                        waypoints: waypoints.length
                     };
                 } catch (error) {
                     console.error('API test failed:', error);
@@ -281,9 +336,12 @@ debugApplicationState() {
                 if (window.mapManager) {
                     window.mapManager.debugProcedures();
                     
-                    // NEW: Debug airports
                     if (window.mapManager.debugAirports) {
                         window.mapManager.debugAirports();
+                    }
+
+                    if (window.mapManager.debugWaypoints) {
+                        window.mapManager.debugWaypoints();
                     }
                     
                     const procStats = window.mapManager.getProcedureStats();
@@ -292,7 +350,8 @@ debugApplicationState() {
                     
                     return { 
                         procedures: procStats, 
-                        airports: airportStats  // NEW
+                        airports: airportStats,
+                        waypoints: waypointStats
                     };
                 }
                 return 'Map not initialized';
@@ -314,6 +373,15 @@ debugApplicationState() {
                     await window.mapManager.loadAirportsFromDatabase();
                     await this.loadAirportControls();
                     return 'Airports reloaded';
+                }
+                return 'Map manager not available';
+            },
+
+            reloadWaypoints: async () => {
+                if (window.mapManager && window.mapManager.loadWaypointsFromDatabase) {
+                    await window.mapManager.loadWaypointsFromDatabase();
+                    await this.loadWaypointControls();
+                    return 'Waypoints reloaded';
                 }
                 return 'Map manager not available';
             },
